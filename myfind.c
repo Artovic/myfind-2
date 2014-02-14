@@ -81,6 +81,7 @@ void ls(const struct stat* info)
          fprintf(stdout, "%9lu ", (unsigned long) info->st_size);
          /** iNodes ausgeben **/
          fprintf(stdout, "%8lu ", (unsigned long) info->st_ino);
+         /** %lu wegen unsigned long **/
          
 }
 /*
