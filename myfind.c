@@ -23,11 +23,21 @@
  */
 
 #include <stdio.h>
-
+#include <stdlib>
+#include <string.h>
+#include <fnmatch.h>       /** filename finden **/
+#include <pwd.h>           /** PW Library **/
+#include <grp.h>           /** Gruppenstruktur **/
+#include <limits.h>        /** Könnte eventuell bei maximalen Pfadlaengen bzw. Dateilaengen gebraucht werden **/
+#include <sys/types.h>     /** Library fuer die ganzen Socketfunktionen **/
+#include <sys/stat.h>      /** Hiermit sollte es moeglich sein Infos über Dateien zu ermitteln **/
+#include <errno.h>         /** Fehlerhandling **/
+#include <time.h>          /** Aktuelle Zeit **/
 /*
  * --------------------------------------------------------------- defines --
  */
-
+#define ERFOLG 1
+#define FEHLER 0
 /*
  * -------------------------------------------------------------- typedefs --
  */
@@ -39,7 +49,7 @@
 /*
  * ------------------------------------------------------------- functions --
  */
-
+void ls(const struct stat* info); /** ls-Funktionalitaet **/
 /**
  *
  * \brief The most minimalistic C program
@@ -63,7 +73,16 @@ int main(int argc,
     printf("Hello world!\n");
     return 0;
 }
-
+void ls(const struct stat* info)
+{
+         /** Blocks ausgeben **/
+         fprintf(stdout, "%2lu ", (unsigned long) info->st_blocks);
+         /** Filegroesse **/
+         fprintf(stdout, "%9lu ", (unsigned long) info->st_size);
+         /** iNodes ausgeben **/
+         fprintf(stdout, "%8lu ", (unsigned long) info->st_ino);
+         
+}
 /*
  * =================================================================== eof ==
  */
