@@ -15,7 +15,11 @@
  *
  * URL: $HeadURL$
  *
+<<<<<<< HEAD
  * Last Modified: $Author: ichbinderbernd $
+=======
+ * Last Modified: $Author: KleHe $
+>>>>>>> 9496c416371d3b843b423891c4e12c8a45c0e2bf
  */
 
 /*
