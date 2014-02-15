@@ -25,7 +25,7 @@
 /* testcomment */
 
 #include <stdio.h>
-#include <stdlib>
+#include <stdlib.h>
 #include <string.h>
 #include <fnmatch.h>       /** filename finden **/
 #include <pwd.h>           /** PW Library **/
@@ -38,8 +38,6 @@
 /*
  * --------------------------------------------------------------- defines --
  */
-#define ERFOLG 1
-#define FEHLER 0
 /*
  * -------------------------------------------------------------- typedefs --
  */
@@ -52,6 +50,9 @@
  * ------------------------------------------------------------- functions --
  */
 void ls(const struct stat* info); /** ls-Funktionalitaet **/
+do_file(const char * file_name, const char * const * parms);
+do_dir(const char * dir_name, const char * const * parms);
+
 /**
  *
  * \brief The most minimalistic C program
@@ -65,27 +66,37 @@ void ls(const struct stat* info); /** ls-Funktionalitaet **/
  * \retval 0 always
  *
  */
-int main(int argc,
-         const char *argv[])
+
+int main(int argc, const char *argv[])
 {
     /* prevent warnings regarding unused params */
-    argc = argc;
-    argv = argv;
+	argc = argc;
+	argv = argv;
 
-    printf("Hello world!\n");
-    return 0;
+	printf("Hello world!\n");
+	return EXIT_SUCCESS;
 }
+
+
 void ls(const struct stat* info)
 {
-         /** Blocks ausgeben **/
-         fprintf(stdout, "%2lu ", (unsigned long) info->st_blocks);
-         /** Filegroesse **/
-         fprintf(stdout, "%9lu ", (unsigned long) info->st_size);
-         /** iNodes ausgeben **/
-         fprintf(stdout, "%8lu ", (unsigned long) info->st_ino);
-         /** %lu wegen unsigned long **/
-         
+	/** Blocks ausgeben **/
+	fprintf(stdout, "%2lu ", (unsigned long) info->st_blocks);
+	/** Filegroesse **/
+	fprintf(stdout, "%9lu ", (unsigned long) info->st_size);
+	/** iNodes ausgeben **/
+	fprintf(stdout, "%8lu ", (unsigned long) info->st_ino);
+	/** %lu wegen unsigned long **/
 }
+
+do_file(const char * file_name, const char * const * parms)
+{
+}
+
+do_dir(const char * dir_name, const char * const * parms)
+{
+}
+
 /*
  * =================================================================== eof ==
  */
