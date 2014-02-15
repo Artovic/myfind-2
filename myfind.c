@@ -22,6 +22,8 @@
  * -------------------------------------------------------------- includes --
  */
 
+/* testcomment */
+
 #include <stdio.h>
 #include <stdlib>
 #include <string.h>
