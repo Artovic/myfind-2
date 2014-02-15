@@ -15,7 +15,7 @@
  *
  * URL: $HeadURL$
  *
- * Last Modified: $Author: bernd $
+ * Last Modified: $Author: klemens $
  */
 
 /*
