@@ -49,9 +49,11 @@
 /*
  * ------------------------------------------------------------- functions --
  */
+void usage(const char *argv[]);
 void ls(const struct stat* info); /** ls-Funktionalitaet **/
-do_file(const char * file_name, const char * const * parms);
-do_dir(const char * dir_name, const char * const * parms);
+void scan(const char * path, const char * const * parms);
+void do_file(const char * file_name, const char * const * parms);
+void do_dir(const char * dir_name, const char * const * parms);
 
 /**
  *
@@ -69,14 +71,42 @@ do_dir(const char * dir_name, const char * const * parms);
 
 int main(int argc, const char *argv[])
 {
-    /* prevent warnings regarding unused params */
+	/* local variable definitions */
+	int i = 1;
+	int paramsplit = 0;
+
+	/* prevent warnings regarding unused params */
 	argc = argc;
 	argv = argv;
 
-	printf("Hello world!\n");
+	/* find out where parameters start */
+	while(i <= argc)
+	{
+		if( ! strcmp(argv[i-1], "-user") )
+		{
+			paramsplit = i;
+			printf("paramsplit: %d\n", paramsplit);
+			break;
+		}
+		i++;
+	}
+
+	i = 2;
+	while ( i < paramsplit )
+	{
+		printf("Directory: %s\n", argv[i-1]);
+		i++;
+	}
+
+	scan(argv[1], NULL);
+
 	return EXIT_SUCCESS;
 }
 
+void usage(const char *argv[]) {
+	argv = argv;
+	fprintf(stdout, "Usage: %s <directory> [params]\n", argv[0]);
+}
 
 void ls(const struct stat* info)
 {
@@ -89,12 +119,46 @@ void ls(const struct stat* info)
 	/** %lu wegen unsigned long **/
 }
 
-do_file(const char * file_name, const char * const * parms)
+void scan(const char * path, const char * const * parms)
 {
+	struct stat myentry;
+	parms = parms;
+
+	if (path == NULL)
+	{
+		printf("Kein zu lesender Eintrag übergeben\n");
+		return;
+	}
+
+	if( stat(path, &myentry) == 0 )
+	{
+		if( myentry.st_mode & S_IFDIR )
+		{
+			printf("is dir\n");
+		}
+		if( myentry.st_mode & S_IFREG )
+		{
+			printf("is file\n");
+		}
+	}
+	else
+	{
+		printf("Fehler beim Lesen von Eintrag %s", path);
+		/* Todo: Fehlerbehandlung */
+	}
 }
 
-do_dir(const char * dir_name, const char * const * parms)
+void do_file(const char * file_name, const char * const * parms)
 {
+	file_name = file_name;
+	parms = parms;
+}
+
+void do_dir(const char * dir_name, const char * const * parms)
+{
+	dir_name = dir_name;
+	parms = parms;
+
 }
 
 /*
