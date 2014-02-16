@@ -42,7 +42,7 @@ EXCLUDE_PATTERN=footrulewidth
 
 all: myfind
 
-hello: $(OBJECTS)
+myfind: $(OBJECTS)
 	$(CC) $(CFLAGS) -o $@ $^
 
 clean:
