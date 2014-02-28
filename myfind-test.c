@@ -63,8 +63,11 @@ void do_dir(const char * dir_name, const char * const * params) {
 		/* directory successfully opened, now read contents */
 		while ( (thisdir = readdir(mydirp)) != NULL ) {
 			/* prevent infinite loops */
-			if ( (strcmp(thisdir->d_name, ".") != 0 ) && (strcmp(thisdir->d_name, "..") != 0 )) {
+			if ( (strcmp(thisdir->d_name, ".") != 0 ) && (strcmp(thisdir->d_name, "..") != 0 ) ) {
+				/* TODO: work out how to do that:
 				do_file(strcat(strcat(dir_name,'/'),thisdir->d_name), params);
+				*/
+				do_file(thisdir->d_name, params);
 			}
 		}
 
