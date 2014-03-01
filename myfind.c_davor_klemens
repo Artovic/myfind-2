@@ -1,0 +1,324 @@
+/**
+ * @file myfind.c
+ * Betriebssysteme myfind 
+ * Beispiel 1
+ *
+ * @author Leandros Athanasiadis <leandros.athanasiadis@technikum-wien.at>
+ * @date 2014/02/14
+ *
+ * @version $Revision: 470 $
+ *
+ * @todo Test it more seriously and more complete.
+ * @todo Review it for missing error checks.
+ * @todo Review it and check the source against the rules at
+ *       https://cis.technikum-wien.at/documents/bic/2/bes/semesterplan/lu/c-rules.html
+ *
+ * URL: $HeadURL$
+ *
+<<<<<<< HEAD
+ * Last Modified: $Author: ichbinderbernd $
+=======
+ * Last Modified: $Author: KleHe $
+>>>>>>> 9496c416371d3b843b423891c4e12c8a45c0e2bf
+ */
+
+/*
+ * -------------------------------------------------------------- includes --
+ */
+
+/* testcomment */
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <fnmatch.h>       /** filename finden **/
+#include <pwd.h>           /** PW Library **/
+#include <grp.h>           /** Gruppenstruktur **/
+#include <limits.h>        /** Könnte eventuell bei maximalen Pfadlaengen bzw. Dateilaengen gebraucht werden **/
+#include <sys/types.h>     /** Library fuer die ganzen Socketfunktionen **/
+#include <sys/stat.h>      /** Hiermit sollte es moeglich sein Infos über Dateien zu ermitteln **/
+#include <errno.h>         /** Fehlerhandling **/
+#include <time.h>          /** Aktuelle Zeit **/
+/*
+ * --------------------------------------------------------------- defines --
+ */
+/*
+ * -------------------------------------------------------------- typedefs --
+ */
+
+/*
+ * --------------------------------------------------------------- globals --
+ */
+
+/*
+ * ------------------------------------------------------------- functions --
+ */
+void usage(const char *argv[]);
+void ls(const struct stat* info); /** ls-Funktionalitaet **/
+void scan(const char * path, const char * const * parms);
+void do_file(const char * file_name, const char * const * parms);
+void do_dir(const char * dir_name, const char * const * parms);
+char get_type(const struct stat* file_info); /* Typ der Datei bestimmen */
+void permissions(const struct stat* file_info) /* Ausgabe der Berechtigungen */
+void usr_grp(const struct stat* file_info);
+void no_usr_grp(const struct stat* file_info);
+void time(const struct stat* file_info);
+int no_user(const struct stat* file_info);
+/**
+ *
+ * \brief The most minimalistic C program
+ *
+ * This is the main entry point for any C program.
+ *
+ * \param argc the number of arguments
+ * \param argv the arguments itselves (including the program name in argv[0])
+ *
+ * \return always "success"
+ * \retval 0 always
+ *
+ */
+
+int main(int argc, const char *argv[])
+{
+	/* local variable definitions */
+	int i = 1;
+	int paramsplit = 0;
+
+	/* prevent warnings regarding unused params */
+	argc = argc;
+	argv = argv;
+
+	/* find out where parameters start */
+	while(i <= argc)
+	{
+		if( ! strcmp(argv[i-1], "-user") )
+		{
+			paramsplit = i;
+			printf("paramsplit: %d\n", paramsplit);
+			break;
+		}
+		i++;
+	}
+
+	i = 2;
+	while ( i < paramsplit )
+	{
+		printf("Directory: %s\n", argv[i-1]);
+		i++;
+	}
+
+	scan(argv[1], NULL);
+
+	return EXIT_SUCCESS;
+}
+
+void usage(const char *argv[]) {
+	argv = argv;
+	fprintf(stdout, "Usage: %s <directory> [params]\n", argv[0]);
+}
+
+void ls(const struct stat* info)
+{
+	struct time *tm;
+	time_t t;
+	char x[100];
+	t = time(NULL);
+	tm = localtime(%t);
+	
+	/** Blocks ausgeben **/
+	fprintf(stdout, "%2lu ", (unsigned long) info->st_blocks);
+	/** Filegroesse **/
+	fprintf(stdout, "%9lu ", (unsigned long) info->st_size);
+	/** iNodes ausgeben **/
+	fprintf(stdout, "%8lu ", (unsigned long) info->st_ino);
+	/** %lu wegen unsigned long **/
+	
+	fprintf(stdout, "%lu ", (unsigned long) info->st_mtime);
+	/* Last modification time */
+	fprintf(stdout, "%lu ", (unsigned long) info->st_nlink);
+	/* number of hardlinks */
+		
+	
+}
+
+void scan(const char * path, const char * const * parms)
+{
+	struct stat myentry;
+	parms = parms;
+
+	if (path == NULL)
+	{
+		printf("Kein zu lesender Eintrag übergeben\n");
+		return;
+	}
+
+	if( stat(path, &myentry) == 0 )
+	{
+		if( myentry.st_mode & S_IFDIR )
+		{
+			printf("is dir\n");
+		}
+		if( myentry.st_mode & S_IFREG )
+		{
+			printf("is file\n");
+		}
+	}
+	else
+	{
+		printf("Fehler beim Lesen von Eintrag %s", path);
+		/* Todo: Fehlerbehandlung */
+	}
+}
+
+void do_file(const char * file_name, const char * const * parms)
+{
+	file_name = file_name;
+	parms = parms;
+}
+
+void do_dir(const char * dir_name, const char * const * parms)
+{
+	struct dirent *start = NULL; /* Speicher die File serial number und Namen des Eintrags */
+	struct stat file;
+	char *path = NULL;
+
+	DIR *dp = NULL;			/* Struktur, die ein Dir-Stream enthält */
+	int path_len = 0;
+	int errRet = EXIT_SUCCESS; 
+	
+	/* Directory öffnen */
+	dp = opendir(dir_name);  /* Dir-Stream zeigt auf das erste Element */
+	/* Wenn kein Verzeichnis mit dem Namen */
+	if (dp == NULL)
+	{
+		if(do_file(dir_name,parms)) /* Wenn kein Verzeichnis, dann vllt. eine Datei? */
+		{
+			fprintf(stderr,"%s: Directory Error Message = %s\n", parms[0], strerror(errno));
+		/* Fehler: Weder Verzeichnis noch Datei */
+			if(x)
+			{
+				fprintf(stderr,"%s: Errormessage = %s\n", Programmname, strerror(errno));
+				 return EXIT_FAILURE(closedir(dp));
+			}		
+		}
+		
+
+
+}
+
+char get_type(const struct stat* file_info)
+{
+	char x = '0'; /* return Variable */
+
+	/* Suche nach den Type und gib entsprechendes Zeichen zurück */
+	if(S_ISBLK(file_info->st_mode)) /* Blockorientierte Gerätedatei */
+	x = 'b';
+	else if(S_ISCHR(file_info->st_mode)) /* directory */
+	x = 'd';
+	else if(S_ISFIFO(file_info->st_mode)) /* pipe */
+	x = 'p';
+	else if(S_ISREG(file_info->st_mode)) /* regular file */
+	x = '-';
+	else if(S_ISLINK(file_info->st_mode)) /* symboling link */
+	x = 'l';
+	else if(S_ISSOCK(file_info->st_mode)) /* unix socket */
+	x = 's';
+	else
+	x = '?';
+	/* kein passenden DT gefunden */
+	return x;
+}
+void permissions(const struct stat* file_info)
+{
+	/* Print file type */
+	fprintf(stdout, "%c", get_type(file_info));
+	
+	/* Print user information */
+	fprintf(stdout,"%c",(file_info->st_mode & S_IRUSR ? 'r' : '-'));
+	fprintf(stdout,"%c",(file_info->st_mode & S_IWUSR ? 'w' : '-'));
+	if(!(file_info->st_mode & S_ISUID))
+		/* Keine UID besetzt */
+		fprintf(stdoud, "%c",(file_info->st_mode & S_ISUID ? 's' : '-'));
+	else if (file_info->st_mode & S_ISUID && file_info->st_mode & S_IXUSR)
+		/* UID gesetzt und Execute Bit gesetzt */
+	else
+		fprintf(stdout, "%c",(file_info->st_mode & S_ISUID ? 'S' : '-'));
+
+	/* Print group permissions */
+	fprintf(stdout,"%c",(file_info->st_mode & S_IRGRP ? 'r' : '-'));
+	fprintf(stdout,"%c",(file_info->st_mode & S_IWGRP ? 'w' : '-'));
+	if(!(file_info->st_mode & S_ISGID))
+		/* kein GID-Bit gesetzt */
+		fprintf(stdout, "%c", (file_info->st_mode & S_ISGID ? 'x' : '-'));
+	else if (file_info->st_mode & S_ISGID && file_info->st_mode & S_IXGRP)
+		/* UID gesetzt und Execute Bit gesetzt */
+
+	/* Print other permissions */
+	fprintf(stdout,"%c",(file_info->st_mode & S_IROTH ? 'r' : '-'));
+	fprintf(stdout,"%c",(file_info->st_mode & S_IWOTH ? 'w' : '-'));
+        if (!(file_info->st_mode & S_ISVTX))        
+	/* kein Sticky-Bit gesetzt */
+        fprintf(stdout,"%c",(file_info->st_mode & S_IXOTH ? 'x' : '-'));
+        else if (file_info->st_mode & S_ISVTX && file_info->st_mode & S_IXOTH)  
+        /* Sticky-Bit gesetzt und Execute-Bit gesetzt */
+        fprintf(stdout,"%c",(file_info->st_mode & S_ISVTX ? 't' : '-'));
+        else
+        /**Sticky-Bit gesetzt aber nicht das Execute-Bit*/
+        fprintf(stdout,"%c",(file_info->st_mode & S_ISVTX ? 'T' : '-'));
+
+        fprintf(stdout,"  ");
+	
+}
+void p_usr_grp(const struct stat* file_info)
+{
+	struct passwd *pwd; /* Pointer auf struct passwd in pwd.h */
+	struct group *grp; /* Pointer auf struct group in grp.h */
+	
+	/* Print username */
+	pwd = getpwuid(file_info->st_uid);
+	if(pwd != NULL)
+		fprintf(stdout, "%s", pwd->pw_name);
+	else
+		fprintf(stdout, "%d", file_info->st_uid);
+	
+	/* Print groupname */
+	grp = getgrgid (file_info->st_gid);
+	if(pwd != NULL)
+		fprintf(stdout,"%s", grp->gr_name);
+	else if (grp != NULL)
+		fprintf(stdout, "%s", grp->gr_name);
+	else	
+		fprintf(stdout, "%d", file_info->st_gid);
+}
+
+void no_usr_grp(const struct stat* file_info)
+{
+	/* Überprüfung ob es zu einer UID eine Group gibt */
+	if (getgrgid(file_info->st_gid) == NULL)
+	{
+		fprintf(stderr,"%s: Errormessage = %s\n", file_info, strerror(errno));
+	}
+}
+
+void p_time(const struct stat* file_info)
+{
+	/* String für formatierte Zeit */
+        char zeit_string[100] = "\0";  
+
+	/* Zeit wird auf aktuelle Zeitzone umgerechnet und passend formatiert in das Array ausgegeben */
+    	strftime(zeit_string,100,"%b %d %H:%M %Y", localtime(&file_info->st_mtime));
+        fprintf(stdout, "%s", time_string);
+}
+
+int no_user(const struct stat* file_info)
+{
+        /* Überprüfung ob es zu einer UID einen User gibt */
+   	if (getpwuid(file_info->st_uid) == NULL)
+	{
+		fprintf(stderr, "%s: Errormessage = %s\n", file_info, strerror(errno));
+	}
+}
+
+/*
+ * =================================================================== eof ==
+ */
