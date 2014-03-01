@@ -92,7 +92,7 @@ void do_file(const char * file_name, const char * const * params) {
 	struct stat myfile;
 
 	#ifdef MYFIND_DEBUG
-	fprintf(stderr, "do_file was called for dir: %s\n", file_name);
+	fprintf(stderr, "do_file was called for file: %s\n", file_name);
 	#endif
 
 	if ( lstat(file_name, &myfile) == -1 ) {
@@ -110,14 +110,12 @@ void do_file(const char * file_name, const char * const * params) {
 
 void do_dir(const char * dir_name, const char * const * params) {
 
-	DIR *mydirp;
-	struct dirent *thisdir;
+	DIR *mydirp = NULL;
+	struct dirent *thisdir = NULL;
 
 	#ifdef MYFIND_DEBUG
 	fprintf(stderr, "do_dir was called for dir: %s\n", dir_name);
 	#endif
-
-	params = params;
 
 	mydirp = opendir(dir_name);
 
@@ -129,16 +127,21 @@ void do_dir(const char * dir_name, const char * const * params) {
 		while ( (thisdir = readdir(mydirp)) != NULL ) {
 			/* prevent infinite loops */
 			if ( (strcmp(thisdir->d_name, ".") != 0 ) && (strcmp(thisdir->d_name, "..") != 0 ) ) {
+				/* do_file(thisdir->d_name, params); */
 				do_file(strcat(strcat((char*) dir_name,"/"),thisdir->d_name), params);
 			}
 		}
 
-                closedir(mydirp);
-                mydirp = NULL;
         }
+
+	closedir(mydirp);
+
+	thisdir = NULL;
+	mydirp = NULL;
 }
 
 char get_file_type(const struct stat * file) {
+
 	char retval = 'u';
 
 	if(S_ISBLK(file->st_mode)) { retval = 'b'; }
