@@ -8,7 +8,7 @@
  * @author Davor Dadic <d.dadic@technikum-wien.at>
  * @date 2014/03/02
  *
- * @version 1.0
+ * @version 0.7 
  *
  */
 
