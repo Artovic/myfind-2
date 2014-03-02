@@ -6,18 +6,10 @@
  * @author Leandros Athanasiadis <leandros.athanasiadis@technikum-wien.at>
  * @author Klemens Henk <klemens.henk@technikum-wien.at>
  * @author Davor Dadic <d.dadic@technikum-wien.at>
- * @date 2014/02/14
+ * @date 2014/03/02
  *
- * @version $Revision: 470 $
+ * @version 1.0
  *
- * @todo Test it more seriously and more complete.
- * @todo Review it for missing error checks.
- * @todo Review it and check the source against the rules at
- *       https://cis.technikum-wien.at/documents/bic/2/bes/semesterplan/lu/c-rules.html
- *
- * URL: $HeadURL$
- *
- * Last Modified: $Author: KleHe $
  */
 
 /*
