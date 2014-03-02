@@ -33,6 +33,7 @@
 #include <pwd.h>
 #include <grp.h>
 #include <time.h>
+#include <unistd.h>
 
 
 /*
@@ -48,6 +49,8 @@
 #define OPTION_LS "-ls"
 #define OPTION_NOUSER "-nouser"
 #define OPTION_PATH "-path"
+
+#define MAXPATHLENGTH 1024
 
 /*
  * -------------------------------------------------------------- typedefs --
@@ -148,7 +151,7 @@ void do_dir(const char * dir_name, const char * const * params) {
 
 	DIR *mydirp = NULL;
 	struct dirent *thisdir = NULL;
-	char path[1024] = {0};
+	char path[MAXPATHLENGTH] = {0};
 
 	#ifdef MYFIND_DEBUG
 	fprintf(stderr, "do_dir was called for dir: %s\n", dir_name);
@@ -198,9 +201,14 @@ void ls(const struct stat * file, const char * file_name) {
 
 	char permissions[10] = {0};
 	char timestring[30] = {0};
+	char linkdestination[MAXPATHLENGTH] = {0};
+	int linkbytesread = 0;
+	char filetype = 0;
 	struct passwd *pwd = NULL;
 	struct group *grp = NULL;
 	struct tm *ptime = NULL;
+
+	filetype = get_file_type(file);
 
 	/* initialize 9 of 10 chars of permissions with - */
 	memset(permissions, '-', 9 );
@@ -256,7 +264,7 @@ void ls(const struct stat * file, const char * file_name) {
 	/* print blockcount as 1k blocks*/
 	printf("%lu ", (file->st_blocks / 2));
 	/* print type and permissions */
-	printf("%c%s ", get_file_type(file), permissions);
+	printf("%c%s ", filetype, permissions);
 	/* print hardlink count */
 	printf("%lu ", file->st_nlink);
 
@@ -291,7 +299,21 @@ void ls(const struct stat * file, const char * file_name) {
 	printf("%s ", timestring);
 
 	/* print file name */
-	printf("%s\n", file_name);
+	printf("%s", file_name);
+
+	/* in case it's a symlink, print it's destination */
+	if (filetype == 'l') {
+		linkbytesread = readlink(file_name, linkdestination, MAXPATHLENGTH-1);
+		if ( linkbytesread > 0 ) {
+			printf(" -> %s", linkdestination);
+		}
+		else {
+			printf(" -> ERROR READING LINK");
+			/* TODO: read errno and do something with it */
+		}
+	}
+
+	printf("\n");
 
 }
 
