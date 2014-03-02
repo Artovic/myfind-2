@@ -30,8 +30,8 @@
 #include <string.h>
 #include <dirent.h>
 #include <sys/stat.h>
-#include <pwd.h>           /** PW Library **/
-#include <grp.h>           /** Gruppenstruktur **/
+#include <pwd.h>
+#include <grp.h>
 #include <time.h>
 
 
@@ -40,6 +40,14 @@
  */
 
 #define MYFIND_DEBUG
+
+#define OPTION_USER "-user"
+#define OPTION_NAME "-name"
+#define OPTION_TYPE "-type"
+#define OPTION_PRINT "-print"
+#define OPTION_LS "-ls"
+#define OPTION_NOUSER "-nouser"
+#define OPTION_PATH "-path"
 
 /*
  * -------------------------------------------------------------- typedefs --
@@ -78,12 +86,31 @@ boolean_t nouser(const struct stat * file);
  */
 
 int main(int argc, const char * const * argv) {
-	argc = argc;
-	argv = argv;
 
+	int i = 0;
+
+	/* Syntax check of passed params */
 	if (argc <2) {
 		usage(&argv[0]);
 	}
+	for(i=3; i<= argc; i++) {
+		/* OPTION_TYPE must be either bcdpfls */
+		if  (strcmp(argv[i-1], OPTION_TYPE) == 0) {
+			if (i == argc || (strcmp(argv[i], "b") != 0 && strcmp(argv[i], "c") != 0
+			&& strcmp(argv[i], "d") != 0 && strcmp(argv[i], "p") != 0
+			&& strcmp(argv[i], "f") != 0 && strcmp(argv[i], "l") != 0
+			&& strcmp(argv[i], "s") != 0)
+			) {
+				fprintf(stderr, "Option %s needs an argument of [bcdpfls]\n\n", argv[i-1]);
+				usage(&argv[0]);
+			}
+		}
+		/* OPTION_USER, OPTION_NAME and OPTION_PATH need an argument */
+		if ( (strcmp(argv[i-1], OPTION_USER) == 0 || strcmp(argv[i-1], OPTION_NAME) == 0 || strcmp(argv[i-1], OPTION_PATH) == 0) && i == argc) {
+				fprintf(stderr, "Option %s needs an argument\n\n", argv[i-1]);
+				usage(&argv[0]);
+		}
+	}	
 
 	do_dir(argv[1], &argv[2]);
 
@@ -91,7 +118,7 @@ int main(int argc, const char * const * argv) {
 }
 
 void usage(const char * const * myname) {
-	fprintf(stderr, "Usage: %s <VERZEICHNIS> [PARAMETER]\n", myname[0]);
+	fprintf(stderr, "Usage: %s <DIRECTORY> [PARAMETER]\n", myname[0]);
 	exit(EXIT_FAILURE);
 }
 
@@ -175,7 +202,7 @@ void ls(const struct stat * file, const char * file_name) {
 	struct group *grp = NULL;
 	struct tm *ptime = NULL;
 
-	/* initialize permissions with - */
+	/* initialize 9 of 10 chars of permissions with - */
 	memset(permissions, '-', 9 );
 
 	/* user permissions */
