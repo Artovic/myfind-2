@@ -143,7 +143,7 @@ void do_file(const char * file_name, const char * const * argv, int argc) {
 				ls(&myfile, file_name, argv);
 				lsed = true;
 			}
-			/* print it if explicitely invoked or last param given */
+			/* print it if invoked explicitely or nothing lsed yet */
 			if ( (strcmp(argv[i-1], OPTION_PRINT) == 0 && printed == false) || (i==argc && printed == false && lsed == false) ) {
 				printf("%s\n", file_name);
 				printed = true;
