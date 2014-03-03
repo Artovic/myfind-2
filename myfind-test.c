@@ -32,7 +32,7 @@
  * --------------------------------------------------------------- defines --
  */
 
-#define MYFIND_DEBUG
+#undef MYFIND_DEBUG
 
 #define OPTION_USER "-user"
 #define OPTION_NAME "-name"
@@ -119,9 +119,8 @@ void do_file(const char * file_name, const char * const * argv, int argc) {
 
 	struct stat myfile;
 	int i = 0;
-
-	argv = argv;
-	argc = argc;
+	boolean_t printed = false;
+	boolean_t lsed = false;
 
 	#ifdef MYFIND_DEBUG
 	fprintf(stderr, "do_file was called for file: %s\n", file_name);
@@ -132,13 +131,18 @@ void do_file(const char * file_name, const char * const * argv, int argc) {
 	}
 	else {
 		/* do something according to params */
-		for(i=3; i<= argc; i++) {
+		for(i=2; i<= argc; i++) {
+
 			if (strcmp(argv[i-1], OPTION_LS) == 0) {
 				ls(&myfile, file_name, argv);
+				lsed = true;
 			}
-			if (strcmp(argv[i-1], OPTION_PRINT) == 0) {
+			/* print it if explicitely invoked or last param given */
+			if ( strcmp(argv[i-1], OPTION_PRINT) == 0 || (i==argc && printed == false && lsed == false) ) {
 				printf("%s\n", file_name);
+				printed = true;
 			}
+
 		}
 
 		if ( get_file_type(&myfile) == 'd' ) {
