@@ -133,12 +133,12 @@ void do_file(const char * file_name, const char * const * argv, int argc) {
 		/* do something according to params */
 		for(i=2; i<= argc; i++) {
 
-			if (strcmp(argv[i-1], OPTION_LS) == 0) {
+			if (strcmp(argv[i-1], OPTION_LS) == 0 && lsed == false) {
 				ls(&myfile, file_name, argv);
 				lsed = true;
 			}
 			/* print it if explicitely invoked or last param given */
-			if ( strcmp(argv[i-1], OPTION_PRINT) == 0 || (i==argc && printed == false && lsed == false) ) {
+			if ( (strcmp(argv[i-1], OPTION_PRINT) == 0 && printed == false) || (i==argc && printed == false && lsed == false) ) {
 				printf("%s\n", file_name);
 				printed = true;
 			}
