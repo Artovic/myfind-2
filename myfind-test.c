@@ -133,6 +133,12 @@ void do_file(const char * file_name, const char * const * argv, int argc) {
 		/* do something according to params */
 		for(i=2; i<= argc; i++) {
 
+			if (strcmp(argv[i-1], OPTION_NOUSER) == 0) {
+				if (nouser(&myfile) == false) {
+					break;
+				}
+			}
+
 			if (strcmp(argv[i-1], OPTION_LS) == 0 && lsed == false) {
 				ls(&myfile, file_name, argv);
 				lsed = true;
