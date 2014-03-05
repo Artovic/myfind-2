@@ -70,7 +70,7 @@ void usage(void);
 void do_file(const char * file_name, const char * const * argv, int argc);	
 void do_dir(const char * dir_name, const char * const * argv, int argc);
 char get_file_type(const struct stat * file);
-void ls(const struct stat * file, const char * file_name, const char * const * argv);
+void ls(const struct stat * file, const char * file_name);
 boolean_t nouser(const struct stat * file);
 
 /**
@@ -105,13 +105,13 @@ int main(int argc, const char * const * argv) {
 			&& strcmp(argv[i], "f") != 0 && strcmp(argv[i], "l") != 0
 			&& strcmp(argv[i], "s") != 0)
 			) {
-				fprintf(stderr, "%s: Option %s needs an argument of [bcdpfls].\n\n", argv[0], argv[i-1]);
+				fprintf(stderr, "%s: Option %s needs an argument of [bcdpfls].\n\n", progname, argv[i-1]);
 				usage();
 			}
 		}
 		/* OPTION_USER, OPTION_NAME and OPTION_PATH need an argument */
 		if ( (strcmp(argv[i-1], OPTION_USER) == 0 || strcmp(argv[i-1], OPTION_NAME) == 0 || strcmp(argv[i-1], OPTION_PATH) == 0) && i == argc) {
-				fprintf(stderr, "%s: Option %s needs an argument.\n\n", argv[0], argv[i-1]);
+				fprintf(stderr, "%s: Option %s needs an argument.\n\n", progname, argv[i-1]);
 				usage();
 		}
 	}	
@@ -138,7 +138,7 @@ void do_file(const char * file_name, const char * const * argv, int argc) {
 	#endif
 
 	if ( lstat(file_name, &myfile) == -1 ) {
-		fprintf(stderr, "%s: Could not stat %s\n", argv[0], file_name);
+		fprintf(stderr, "%s: Could not stat %s\n", progname, file_name);
 	}
 	else {
 		/* do something according to params */
@@ -157,7 +157,7 @@ void do_file(const char * file_name, const char * const * argv, int argc) {
 			}
 
 			if (strcmp(argv[i-1], OPTION_LS) == 0 && lsed == false) {
-				ls(&myfile, file_name, argv);
+				ls(&myfile, file_name);
 				lsed = true;
 			}
 			/* print it if invoked explicitely or nothing lsed yet */
@@ -187,7 +187,7 @@ void do_dir(const char * dir_name, const char * const * argv, int argc) {
 	mydirp = opendir(dir_name);
 
         if (mydirp == NULL) {
-                fprintf(stderr, "%s: Directory %s could not be opened.\n", argv[0], dir_name);
+                fprintf(stderr, "%s: Directory %s could not be opened.\n", progname, dir_name);
         }
         else {
 		/* directory successfully opened, now read contents */
@@ -198,7 +198,7 @@ void do_dir(const char * dir_name, const char * const * argv, int argc) {
 				/* allocate memory for path, /, d_name and \0 */
 				path = malloc( (strlen(dir_name)+strlen(thisdir->d_name)+2) * sizeof(char) );
 				if (path == NULL) {
-					fprintf(stderr, "%s: Memory allocation for path in do_dir failed, exiting.\n", argv[0]);
+					fprintf(stderr, "%s: Memory allocation for path in do_dir failed, exiting.\n", progname);
 					exit(EXIT_FAILURE);
 				}
 
@@ -240,7 +240,7 @@ char get_file_type(const struct stat * file) {
 	return retval;
 }
 
-void ls(const struct stat * file, const char * file_name, const char * const * argv) {
+void ls(const struct stat * file, const char * file_name) {
 
 	char permissions[10] = {0};
 	char timestring[30] = {0};
@@ -352,7 +352,7 @@ void ls(const struct stat * file, const char * file_name, const char * const * a
 
 		linkdestination = malloc(linklength);
 		if (linkdestination == NULL) {
-			fprintf(stderr, "%s: Memory allocation for linkdestination in ls failed, exiting.\n", argv[0]);
+			fprintf(stderr, "%s: Memory allocation for linkdestination in ls failed, exiting.\n", progname);
 			exit(EXIT_FAILURE);
 		}
 
@@ -364,7 +364,7 @@ void ls(const struct stat * file, const char * file_name, const char * const * a
 		}
 		else {
 			printf(" -> ERROR READING LINK");
-			fprintf(stderr, "%s: Reading symlink %s failed.\n", argv[0], file_name);
+			fprintf(stderr, "%s: Reading symlink %s failed.\n", progname, file_name);
 			/* TODO: read errno and do something with it */
 		}
 
