@@ -27,6 +27,8 @@
 #include <time.h>
 #include <unistd.h>
 #include <fnmatch.h>
+#include <libgen.h>
+
 
 
 /*
@@ -141,7 +143,7 @@ void do_file(const char * file_name, const char * const * argv, int argc) {
 			}
 
 			if (strcmp(argv[i-1], OPTION_NAME) == 0) {
-				if (fnmatch(argv[i], file_name, FNM_NOESCAPE) != 0) {
+				if (fnmatch(argv[i], basename((char*)file_name), FNM_NOESCAPE) != 0) {
 					break;
 				}
 			}
