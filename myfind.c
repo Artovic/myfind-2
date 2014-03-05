@@ -37,6 +37,8 @@
 
 #undef MYFIND_DEBUG
 
+#define MAXPARAMLENGTH 8
+
 #define OPTION_USER "-user"
 #define OPTION_NAME "-name"
 #define OPTION_TYPE "-type"
@@ -56,11 +58,15 @@ typedef enum boolean { false, true } boolean_t;
  * --------------------------------------------------------------- globals --
  */
 
+const char knownparams[][MAXPARAMLENGTH] = { OPTION_USER, OPTION_NAME, OPTION_TYPE, OPTION_PRINT, OPTION_LS, OPTION_NOUSER, OPTION_PATH };
+const int knownparamcnt = sizeof(knownparams)/MAXPARAMLENGTH;
+const char *progname = NULL;
+
 /*
  * ------------------------------------------------------------- functions --
  */
 
-void usage(const char * const * myname);
+void usage(void);
 void do_file(const char * file_name, const char * const * argv, int argc);	
 void do_dir(const char * dir_name, const char * const * argv, int argc);
 char get_file_type(const struct stat * file);
@@ -85,9 +91,11 @@ int main(int argc, const char * const * argv) {
 
 	int i = 0;
 
+	progname = basename((char*) argv[0]);
+
 	/* Syntax check of passed params */
 	if (argc <2) {
-		usage(&argv[0]);
+		usage();
 	}
 	for(i=3; i<= argc; i++) {
 		/* OPTION_TYPE must be either bcdpfls */
@@ -98,13 +106,13 @@ int main(int argc, const char * const * argv) {
 			&& strcmp(argv[i], "s") != 0)
 			) {
 				fprintf(stderr, "%s: Option %s needs an argument of [bcdpfls].\n\n", argv[0], argv[i-1]);
-				usage(&argv[0]);
+				usage();
 			}
 		}
 		/* OPTION_USER, OPTION_NAME and OPTION_PATH need an argument */
 		if ( (strcmp(argv[i-1], OPTION_USER) == 0 || strcmp(argv[i-1], OPTION_NAME) == 0 || strcmp(argv[i-1], OPTION_PATH) == 0) && i == argc) {
 				fprintf(stderr, "%s: Option %s needs an argument.\n\n", argv[0], argv[i-1]);
-				usage(&argv[0]);
+				usage();
 		}
 	}	
 
@@ -113,8 +121,8 @@ int main(int argc, const char * const * argv) {
 	return EXIT_SUCCESS;
 }
 
-void usage(const char * const * myname) {
-	fprintf(stderr, "Usage: %s <DIRECTORY> [PARAMETER]\n", myname[0]);
+void usage(void) {
+	fprintf(stderr, "Usage: %s <DIRECTORY> [PARAMETER]\n", progname);
 	exit(EXIT_FAILURE);
 }
 
