@@ -28,6 +28,7 @@
 #include <unistd.h>
 #include <fnmatch.h>
 #include <libgen.h>
+#include <errno.h>
 
 
 
@@ -187,7 +188,18 @@ void do_dir(const char * dir_name, const char * const * argv, int argc) {
 	mydirp = opendir(dir_name);
 
         if (mydirp == NULL) {
-                fprintf(stderr, "%s: Directory %s could not be opened.\n", progname, dir_name);
+		fprintf(stderr, "%s: Error opening %s - ", progname, dir_name);	
+		switch(errno) {
+			case(EACCES): fprintf(stderr, "permission denied while opening directory.\n"); break;
+			case(ELOOP): fprintf(stderr, "too many synbolic links encountered while resolving path.\n"); break;
+			case(ENAMETOOLONG): fprintf(stderr, "length exceeds ${PATH_MAX} or ${NAME_MAX}.\n"); break;
+			case(ENOENT): fprintf(stderr, "not found.\n"); break;
+			case(ENOTDIR): fprintf(stderr, "not a directory.\n"); break;
+			case(EMFILE): fprintf(stderr, "too many open files (process).\n"); break;
+			case(ENFILE): fprintf(stderr, "too many open files (system).\n"); break;
+			case(ENOMEM): fprintf(stderr, "memory exhausted.\n"); break;
+			default: fprintf(stderr, "unknown error, errno is: %d.\n", errno); break;
+		}
         }
         else {
 		/* directory successfully opened, now read contents */
