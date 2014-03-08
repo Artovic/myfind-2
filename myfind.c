@@ -50,7 +50,10 @@
 #define OPTION_PATH "-path"
 
 #define FILETYPEMODE_LS 0
-#define FILETYPEMODE_TYPE 1 
+#define FILETYPEMODE_TYPE 1
+
+#define DOFILEMODE_SELF 0
+#define DOFILEMODE_OTHER 1 
 
 /*
  * -------------------------------------------------------------- typedefs --
@@ -69,7 +72,7 @@ const char *progname = NULL;
  */
 
 void usage(void);
-void do_file(const char * file_name, const char * const * argv, int argc);	
+void do_file(const char * file_name, const int mode, const char * const * argv, int argc);
 void do_dir(const char * dir_name, const char * const * argv, int argc);
 char get_file_type(const struct stat * file, const int mode);
 void ls(const struct stat * file, const char * file_name);
@@ -147,7 +150,7 @@ void usage(void) {
  * \param argc argc passed through from main()
  *
  */
-void do_file(const char * file_name, const char * const * argv, int argc) {	
+void do_file(const char * file_name, const int mode, const char * const * argv, int argc) {	
 
 	struct stat myfile;
 	int i = 0;
@@ -232,8 +235,8 @@ void do_file(const char * file_name, const char * const * argv, int argc) {
 			}
 
 		}
-		/* if file is a directory descend into hierarchy */
-		if ( get_file_type(&myfile, FILETYPEMODE_TYPE) == 'd' ) {
+		/* if file is subdirectory descend into hierarchy */
+		if ( get_file_type(&myfile, FILETYPEMODE_TYPE) == 'd' && mode == DOFILEMODE_OTHER ) {
 			do_dir(file_name, argv, argc);
 		}
 	}
@@ -261,9 +264,8 @@ void do_dir(const char * dir_name, const char * const * argv, int argc) {
 	fprintf(stderr, "do_dir was called for dir: %s\n", dir_name);
 	#endif
 
-	/* TODO: do current dir
-	do_file(dir_name, argv, argc);
-	*/
+	/* TODO: do current dir */
+	do_file(dir_name, DOFILEMODE_SELF, argv, argc);
 
 	errno = 0;
         if ( (mydirp = opendir(dir_name)) == NULL) {
@@ -301,7 +303,7 @@ void do_dir(const char * dir_name, const char * const * argv, int argc) {
 				strcat(path, thisdir->d_name);
 
 				/* go get infos */
-				do_file(path, argv, argc);
+				do_file(path, DOFILEMODE_OTHER, argv, argc);
 
 				/* free path, set pointer NULL */
 				free(path);
