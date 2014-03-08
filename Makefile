@@ -1,16 +1,15 @@
 ##
-## @file Makefile
+## \file myfind.c
 ## Betriebssysteme myfind Makefile
 ## Beispiel 1
 ##
-## @author Leandros Athanasiadis <leandros.athanasiadis@technikum-wien.at>
-## @date 2014/02/14
+## \author Leandros Athanasiadis <leandros.athanasiadis@technikum-wien.at>
+## \author Klemens Henk <klemens.henk@technikum-wien.at>
+## \author Davor Dadic <davor.dadic@technikum-wien.at>
+## \date 2014/03/08
 ##
-## @version $Revision: 972 $
+## \version 1.0 
 ##
-## @todo
-##
-## Last Modified: $Author: tom $
 ##
 
 ##
