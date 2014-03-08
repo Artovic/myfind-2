@@ -1,14 +1,14 @@
 /**
- * @file myfind.c
+ * \file myfind.c
  * Betriebssysteme myfind 
  * Beispiel 1
  *
- * @author Leandros Athanasiadis <leandros.athanasiadis@technikum-wien.at>
- * @author Klemens Henk <klemens.henk@technikum-wien.at>
- * @author Davor Dadic <d.dadic@technikum-wien.at>
- * @date 2014/03/02
+ * \author Leandros Athanasiadis <leandros.athanasiadis@technikum-wien.at>
+ * \author Klemens Henk <klemens.henk@technikum-wien.at>
+ * \author Davor Dadic <davor.dadic@technikum-wien.at>
+ * \date 2014/03/08
  *
- * @version 0.7 
+ * \version 1.0
  *
  */
 
@@ -29,6 +29,7 @@
 #include <fnmatch.h>
 #include <libgen.h>
 #include <errno.h>
+#include <ctype.h>
 
 
 
@@ -48,19 +49,19 @@
 #define OPTION_NOUSER "-nouser"
 #define OPTION_PATH "-path"
 
+#define FILETYPEMODE_LS 0
+#define FILETYPEMODE_TYPE 1 
+
 /*
  * -------------------------------------------------------------- typedefs --
  */
 
 typedef enum boolean { false, true } boolean_t;
 
-
 /*
  * --------------------------------------------------------------- globals --
  */
 
-const char knownparams[][MAXPARAMLENGTH] = { OPTION_USER, OPTION_NAME, OPTION_TYPE, OPTION_PRINT, OPTION_LS, OPTION_NOUSER, OPTION_PATH };
-const int knownparamcnt = sizeof(knownparams)/MAXPARAMLENGTH;
 const char *progname = NULL;
 
 /*
@@ -70,25 +71,26 @@ const char *progname = NULL;
 void usage(void);
 void do_file(const char * file_name, const char * const * argv, int argc);	
 void do_dir(const char * dir_name, const char * const * argv, int argc);
-char get_file_type(const struct stat * file);
+char get_file_type(const struct stat * file, const int mode);
 void ls(const struct stat * file, const char * file_name);
 boolean_t nouser(const struct stat * file);
+boolean_t usermatch(const struct stat * file, const char * arg);
 
 /**
  *
- * \brief The most minimalistic C program
+ * \brief main() of custom find implementation 
  *
  * This is the main entry point for any C program.
  *
- * \param argc the number of arguments
- * \param argv the arguments itselves (including the program name in argv[0])
+ * \param argc The number of arguments
+ * \param argv The arguments itselves (including the program name in argv[0]).\n
+ * Expects first parameter to be a directory. Any unknown parameters given will be ignored (see synopsis).
  *
- * \return always "success"
- * \retval 0 always
+ * \return Always EXIT_SUCCESS 
  *
  */
 
-int main(int argc, const char * const * argv) {
+int main(int argc, const char *const *argv) {
 
 	int i = 0;
 
@@ -122,27 +124,71 @@ int main(int argc, const char * const * argv) {
 	return EXIT_SUCCESS;
 }
 
+/**
+ *
+ * \brief usage - print synopsis and exit 
+ *
+ * This function is used to print synopsis and exit 
+ *
+ * \return void but terminates execution with EXIT_FAILURE
+ *
+ */
 void usage(void) {
-	fprintf(stderr, "Usage: %s <DIRECTORY> [PARAMETER]\n", progname);
+	fprintf(stderr, "Usage: %s <DIRECTORY> [PARAMETER]\nUnknown parameter and directories after <DIRECTORY> will be ignored.\n", progname);
 	exit(EXIT_FAILURE);
 }
 
+/**
+ *
+ * \brief Get inode information for file
+ *
+ * \param file_name Path of the file name
+ * \param argv argv passed through from main()
+ * \param argc argc passed through from main()
+ *
+ */
 void do_file(const char * file_name, const char * const * argv, int argc) {	
 
 	struct stat myfile;
 	int i = 0;
 	boolean_t printed = false;
 	boolean_t lsed = false;
+	char *file_name_copy = NULL;
+
+	/* basename/dirname may modify passed string so make a copy... */
+	file_name_copy = malloc((strlen(file_name)+1)*sizeof(char));
+	if (file_name_copy == NULL) {
+		fprintf(stderr, "%s: memory allocation for file_name_copy failed!\n", progname);
+		exit(EXIT_FAILURE);
+	}
+	strcpy(file_name_copy, file_name);
+	
 
 	#ifdef MYFIND_DEBUG
 	fprintf(stderr, "do_file was called for file: %s\n", file_name);
 	#endif
 
+	errno = 0;
 	if ( lstat(file_name, &myfile) == -1 ) {
-		fprintf(stderr, "%s: Could not stat %s\n", progname, file_name);
+		fprintf(stderr, "%s: Could not stat %s", progname, file_name);
+		switch(errno) {
+			case(EACCES): fprintf(stderr, "permission denied while opening file.\n"); break;
+			case(EBADF): fprintf(stderr, "not a valid file descriptor.\n"); break;
+			case(EFAULT): fprintf(stderr, "bad address.\n"); break;
+			case(ELOOP): fprintf(stderr, "too many symbolic links encountered while resolving path.\n"); break;
+			case(ENAMETOOLONG): fprintf(stderr, "length exceeds ${PATH_MAX} or ${NAME_MAX}.\n"); break;
+			case(ENOENT): fprintf(stderr, "not found.\n"); break;
+			case(ENOTDIR): fprintf(stderr, "not a directory.\n"); break;
+			case(EMFILE): fprintf(stderr, "too many open files (process).\n"); break;
+			case(ENFILE): fprintf(stderr, "too many open files (system).\n"); break;
+			case(ENOMEM): fprintf(stderr, "memory exhausted.\n"); break;
+			case(EOVERFLOW): fprintf(stderr, "error in definition of struct stat.\n"); break;
+			case(EIO): fprintf(stderr, "error while reading from file system.\n"); break;
+			default: fprintf(stderr, "unknown error, errno is: %d.\n", errno); break;
+		}
 	}
 	else {
-		/* do something according to params */
+		/* parse passed parameters */
 		for(i=2; i<= argc; i++) {
 
 			if (strcmp(argv[i-1], OPTION_NOUSER) == 0) {
@@ -151,8 +197,26 @@ void do_file(const char * file_name, const char * const * argv, int argc) {
 				}
 			}
 
+			if (strcmp(argv[i-1], OPTION_USER) == 0) {
+				if (usermatch(&myfile, argv[i]) == false) {
+					break;
+				}
+			}
+
 			if (strcmp(argv[i-1], OPTION_NAME) == 0) {
-				if (fnmatch(argv[i], basename((char*)file_name), FNM_NOESCAPE) != 0) {
+				if (fnmatch(argv[i], basename((char*)file_name_copy), 0) != 0) {
+					break;
+				}
+			}
+
+			if (strcmp(argv[i-1], OPTION_PATH) == 0) {
+				if (fnmatch(argv[i], file_name, FNM_PATHNAME) != 0) {
+					break;
+				}
+			}
+
+			if (strcmp(argv[i-1], OPTION_TYPE) == 0) {
+				if (argv[i][0] != get_file_type(&myfile, FILETYPEMODE_TYPE)) {
 					break;
 				}
 			}
@@ -168,13 +232,25 @@ void do_file(const char * file_name, const char * const * argv, int argc) {
 			}
 
 		}
-
-		if ( get_file_type(&myfile) == 'd' ) {
+		/* if file is a directory descend into hierarchy */
+		if ( get_file_type(&myfile, FILETYPEMODE_TYPE) == 'd' ) {
 			do_dir(file_name, argv, argc);
 		}
 	}
+
+	free(file_name_copy);
+	file_name_copy = NULL;
 }
 
+/**
+ *
+ * \brief Get contents of directory
+ *
+ * \param dir_name Path of the directory name
+ * \param argv argv passed through from main()
+ * \param argc argc passed through from main()
+ *
+ */
 void do_dir(const char * dir_name, const char * const * argv, int argc) {
 
 	DIR *mydirp = NULL;
@@ -185,13 +261,13 @@ void do_dir(const char * dir_name, const char * const * argv, int argc) {
 	fprintf(stderr, "do_dir was called for dir: %s\n", dir_name);
 	#endif
 
-	mydirp = opendir(dir_name);
-
-        if (mydirp == NULL) {
+	errno = 0;
+        if ( (mydirp = opendir(dir_name)) == NULL) {
 		fprintf(stderr, "%s: Error opening %s - ", progname, dir_name);	
 		switch(errno) {
 			case(EACCES): fprintf(stderr, "permission denied while opening directory.\n"); break;
-			case(ELOOP): fprintf(stderr, "too many synbolic links encountered while resolving path.\n"); break;
+			case(EBADF): fprintf(stderr, "not a valid file descriptor.\n"); break;
+			case(ELOOP): fprintf(stderr, "too many symbolic links encountered while resolving path.\n"); break;
 			case(ENAMETOOLONG): fprintf(stderr, "length exceeds ${PATH_MAX} or ${NAME_MAX}.\n"); break;
 			case(ENOENT): fprintf(stderr, "not found.\n"); break;
 			case(ENOTDIR): fprintf(stderr, "not a directory.\n"); break;
@@ -203,7 +279,8 @@ void do_dir(const char * dir_name, const char * const * argv, int argc) {
         }
         else {
 		/* directory successfully opened, now read contents */
-		while ( (thisdir = readdir(mydirp)) != NULL ) {
+		errno = 0;
+		while ( (thisdir = readdir(mydirp)) != NULL)  {
 			/* prevent infinite loops */
 			if ( (strcmp(thisdir->d_name, ".") != 0 ) && (strcmp(thisdir->d_name, "..") != 0 ) ) {
 
@@ -228,29 +305,67 @@ void do_dir(const char * dir_name, const char * const * argv, int argc) {
 			}
 		}
 
-	mydirp = NULL;
+		/* checking errno in while loops makes no sense as it's allways 0 (thisdir != NULL) */
+		if (errno != 0) {
+			fprintf(stderr, "%s: Error reading directory entry in %s - ", progname, dir_name);	
+			switch(errno) {
+				case(EACCES): fprintf(stderr, "permission denied while opening directory.\n"); break;
+				default: fprintf(stderr, "unknown error. errno is: %d .\n", errno); break;
+			}
+		}
+
 	/* thisdir allready NULL at this time */
 
         }
 
-	closedir(mydirp);
+	if (closedir(mydirp) != 0) {
+		/* does an error message make sense in this case ?
+		fprintf(stderr, "%s: Error closing directory %s\n", progname, dir_name);
+		*/
+	} 
+	mydirp = NULL;
 
 }
 
-char get_file_type(const struct stat * file) {
+/**
+ *
+ * \brief Get file type of file
+ *
+ * \param file Pointer to struct stat of current file 
+ * \param mode Adapts output for further use - filetype for regular file is "f", ls prints it as "-" 
+ * \return One single char
+ *
+ */
+
+char get_file_type(const struct stat * file, const int mode) {
 
 	char retval = 'u';
 
 	if(S_ISBLK(file->st_mode)) { retval = 'b'; }
 	if(S_ISCHR(file->st_mode)) { retval = 'c'; }
 	if(S_ISDIR(file->st_mode)) { retval = 'd'; }
-	if(S_ISFIFO(file->st_mode)) { retval = 'f'; }
-	if(S_ISREG(file->st_mode)) { retval = '-'; }
 	if(S_ISLNK(file->st_mode)) { retval = 'l'; }
 	if(S_ISSOCK(file->st_mode)) { retval = 's'; }
+	if(S_ISFIFO(file->st_mode)) { retval = 'p'; }
+
+	if (mode==FILETYPEMODE_LS) {
+		if(S_ISREG(file->st_mode)) { retval = '-'; }
+	}
+	else if (mode==FILETYPEMODE_TYPE) {
+		if(S_ISREG(file->st_mode)) { retval = 'f'; }
+	}
 
 	return retval;
 }
+
+/**
+ *
+ * \brief Prints ls-style output
+ *
+ * \param file Pointer to struct stat of current file 
+ * \param file_name Path to current file 
+ *
+ */
 
 void ls(const struct stat * file, const char * file_name) {
 
@@ -264,7 +379,7 @@ void ls(const struct stat * file, const char * file_name) {
 	struct group *grp = NULL;
 	struct tm *ptime = NULL;
 
-	filetype = get_file_type(file);
+	filetype = get_file_type(file, FILETYPEMODE_LS);
 
 	/* initialize 9 of 10 chars of permissions with - */
 	memset(permissions, '-', 9 );
@@ -370,14 +485,28 @@ void ls(const struct stat * file, const char * file_name) {
 
 		memset(linkdestination, '\0', linklength);
 
-		linkbytesread = readlink(file_name, linkdestination, linklength-1);
-		if ( linkbytesread > 0 ) {
+		errno = 0;
+		if ( (linkbytesread = readlink(file_name, linkdestination, linklength-1)) > 0 ) {
 			printf(" -> %s", linkdestination);
 		}
 		else {
 			printf(" -> ERROR READING LINK");
-			fprintf(stderr, "%s: Reading symlink %s failed.\n", progname, file_name);
-			/* TODO: read errno and do something with it */
+			fprintf(stderr, "%s: Error reading link %s - ", progname, file_name);	
+			switch(errno) {
+				case(EACCES): fprintf(stderr, "permission denied while opening directory.\n"); break;
+				case(EBADF): fprintf(stderr, "not a valid file descriptor.\n"); break;
+				case(ELOOP): fprintf(stderr, "too many symbolic links encountered while resolving path.\n"); break;
+				case(ENAMETOOLONG): fprintf(stderr, "length exceeds ${PATH_MAX} or ${NAME_MAX}.\n"); break;
+				case(ENOENT): fprintf(stderr, "not found.\n"); break;
+				case(ENOTDIR): fprintf(stderr, "not a directory.\n"); break;
+				case(EMFILE): fprintf(stderr, "too many open files (process).\n"); break;
+				case(ENFILE): fprintf(stderr, "too many open files (system).\n"); break;
+				case(ENOMEM): fprintf(stderr, "memory exhausted.\n"); break;
+				case(EIO): fprintf(stderr, "error while reading from file system.\n"); break;
+				case(EINVAL): fprintf(stderr, "buffer variable not positive or file not a symbolic link.\n"); break;
+				case(EFAULT): fprintf(stderr, "buffer variable extends outside the address space.\n"); break;
+				default: fprintf(stderr, "unknown error, errno is: %d.\n", errno); break;
+			}
 		}
 
 		free(linkdestination);
@@ -388,6 +517,14 @@ void ls(const struct stat * file, const char * file_name) {
 
 }
 
+/**
+ *
+ * \brief Used to return if file's uid is found in local /etc/passwd
+ *
+ * \param file Pointer to struct stat of current file 
+ * \return true if no username found for uid
+ *
+ */
 boolean_t nouser(const struct stat * file) {
 
 	struct passwd *pwd = NULL;
@@ -395,10 +532,47 @@ boolean_t nouser(const struct stat * file) {
 	if ( (pwd = getpwuid(file->st_uid)) == NULL) {
 		return true;
 	}
-	else {
-		pwd = NULL;
-		return false;
+	return false;
+
+}
+
+/**
+ *
+ * \brief Used to return if given uid or username matches file's uid
+ *
+ * \param file Pointer to struct stat of current file 
+ * \param arg String to match
+ * \return true if file's uid matches given uid or username 
+ *
+ */
+boolean_t usermatch(const struct stat * file, const char * arg) {
+
+	struct passwd *pwd = NULL;
+	unsigned int i = 0;
+
+	pwd = getpwnam(arg);
+	if (pwd != NULL) {
+		/* it's a name */
+		if (file->st_uid == pwd->pw_uid) {
+			pwd = NULL;
+			return true;
+		}
 	}
+	else {
+		/* is it a uid? */
+		for (i=0; i<strlen(arg); i++) {
+			if (!isdigit(arg[i])) {
+				/* no uid, return false */
+				return false;
+			}
+		}
+		/* as there are no non-numeric arg, we don't care about them so second arg for strtol() is NULL */
+		if (file->st_uid == strtol(arg, NULL, 10)) {
+			return true;
+		}
+	}
+
+	return false;
 
 }
 
