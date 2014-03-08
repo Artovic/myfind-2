@@ -1,18 +1,2 @@
-.) -user
-.) -type
-.) -name -> Matchingmode checken!
-.) -path
-
-.) 2. nach Option mit Parameter muss einer der bekannten Parameter sein -> bekannte Params in Array ablegen und durchlaufen im Check?
-
-.) errno auswerten!
-
-.) Stringlänge bei strcat checken damit kein Overflow passiert
-
-.) ls() formatiert ausgeben
-
-.) Funktion für uid -> name lookup schreiben, wird in ls() sowie für -user benötigt!
-
-.) stderr-Ausgaben statt mit argv[] mit basename ausgeben -> vielleicht doch in globaler var speichern?
-
-
+char * bla -> wo die Sterndln?
+myfind do_dir muss Directory ausgeben auch wenn permission denied!
