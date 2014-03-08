@@ -261,6 +261,10 @@ void do_dir(const char * dir_name, const char * const * argv, int argc) {
 	fprintf(stderr, "do_dir was called for dir: %s\n", dir_name);
 	#endif
 
+	/* TODO: do current dir
+	do_file(dir_name, argv, argc);
+	*/
+
 	errno = 0;
         if ( (mydirp = opendir(dir_name)) == NULL) {
 		fprintf(stderr, "%s: Error opening %s - ", progname, dir_name);	
