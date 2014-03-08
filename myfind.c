@@ -264,8 +264,10 @@ void do_dir(const char * dir_name, const char * const * argv, int argc) {
 	fprintf(stderr, "do_dir was called for dir: %s\n", dir_name);
 	#endif
 
-	/* TODO: do current dir */
-	do_file(dir_name, DOFILEMODE_SELF, argv, argc);
+	/* do_file for self, but just if top of search hierarchy */
+	if (strcmp(dir_name, argv[1]) == 0) {
+		do_file(dir_name, DOFILEMODE_SELF, argv, argc);
+	}
 
 	errno = 0;
         if ( (mydirp = opendir(dir_name)) == NULL) {
@@ -299,7 +301,9 @@ void do_dir(const char * dir_name, const char * const * argv, int argc) {
 
 				/* Extend current path directory entry */
 				strcpy(path, dir_name);
-				strcat(path, "/");
+				if (strcmp(dir_name, "/") != 0) {
+					strcat(path, "/");
+				}
 				strcat(path, thisdir->d_name);
 
 				/* go get infos */
