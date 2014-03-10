@@ -182,7 +182,7 @@ void do_file(const char * file_name, const int mode, const char * const * argv, 
 
 	errno = 0;
 	if ( lstat(file_name, &myfile) == -1 ) {
-		fprintf(stderr, "%s: Could not stat %s", progname, file_name);
+		fprintf(stderr, "%s: Could not stat %s - ", progname, file_name);
 		switch(errno) {
 			case(EACCES): fprintf(stderr, "permission denied while opening file.\n"); break;
 			case(EBADF): fprintf(stderr, "not a valid file descriptor.\n"); break;
