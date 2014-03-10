@@ -456,7 +456,7 @@ void ls(const struct stat * file, const char * file_name) {
 	/* print type and permissions */
 	printf("%c%s ", filetype, permissions);
 	/* print hardlink count */
-	printf("%lu ", file->st_nlink);
+	printf("%lu ", (long) file->st_nlink);
 
 	/* lookup name for UID */
 	if ((pwd = getpwuid(file->st_uid)) == NULL) {
@@ -584,7 +584,8 @@ boolean_t usermatch(const struct stat * file, const char * arg) {
 			}
 		}
 		/* as there are no non-numeric arg, we don't care about them so second arg for strtol() is NULL */
-		if (file->st_uid == strtol(arg, NULL, 10)) {
+		/* typecast to make it portable between 32/64 bit */
+		if ((long) file->st_uid == strtol(arg, NULL, 10)) {
 			return true;
 		}
 	}
