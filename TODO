@@ -1,2 +1,4 @@
 char * bla -> wo die Sterndln?
 myfind do_dir muss Directory ausgeben auch wenn permission denied!
+
+wenn printf() auf stdout fehlschlägt melden
