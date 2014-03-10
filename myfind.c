@@ -390,7 +390,7 @@ char get_file_type(const struct stat * file, const int mode) {
 void ls(const struct stat * file, const char * file_name) {
 
 	char permissions[10] = {0};
-	char timestring[30] = {0};
+	char timestring[18] = {0};
 	char *linkdestination = NULL;
 	int linkbytesread = 0;
 	int linklength = 0;
