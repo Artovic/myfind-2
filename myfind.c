@@ -87,7 +87,7 @@ boolean_t usermatch(const struct stat * file, const char * arg);
  *
  * \param argc The number of arguments
  * \param argv The arguments itselves (including the program name in argv[0]).\n
- * Expects first parameter to be a directory. Any unknown parameters given will be ignored (see synopsis).
+ * Expects first parameter to be a directory.
  *
  * \return Always EXIT_SUCCESS 
  *
@@ -146,7 +146,7 @@ int main(int argc, const char *const *argv) {
  *
  */
 void usage(void) {
-	fprintf(stderr, "Usage: %s <DIRECTORY> [PARAMETER]\nUnknown parameter and directories after <DIRECTORY> will be ignored.\n", progname);
+	fprintf(stderr, "Usage: %s <DIRECTORY> [PARAMETER]\n", progname);
 	exit(EXIT_FAILURE);
 }
 
