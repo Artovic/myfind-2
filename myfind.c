@@ -30,6 +30,7 @@
 #include <libgen.h>
 #include <errno.h>
 #include <ctype.h>
+#include <assert.h>
 
 
 
@@ -47,6 +48,7 @@
 #define OPTION_PRINT "-print"
 #define OPTION_LS "-ls"
 #define OPTION_NOUSER "-nouser"
+#define OPTION_NOUSER_TEST -nouser
 #define OPTION_PATH "-path"
 
 #define FILETYPEMODE_LS 0
@@ -163,7 +165,8 @@ void do_file(const char * file_name, const int mode, const char * const * argv, 
 
 	struct stat myfile;
 	int i = 0;
-	boolean_t printed = false;
+	/* make sure we print if for-loop is not run */
+	boolean_t printme = true;
 	boolean_t lsed = false;
 	char *file_name_copy = NULL;
 
@@ -201,50 +204,57 @@ void do_file(const char * file_name, const int mode, const char * const * argv, 
 	}
 	else {
 		/* parse passed parameters */
-		for(i=2; i<= argc; i++) {
+		for(i=2; i<argc; i++) {
 
-			if (strcmp(argv[i-1], OPTION_NOUSER) == 0) {
+			/* we have args so printing may not be desirable - evaluate later */
+			printme = false;
+
+			if (strcmp(argv[i], OPTION_NOUSER) == 0) {
 				if (nouser(&myfile) == false) {
 					break;
 				}
 			}
-
-			if (strcmp(argv[i-1], OPTION_USER) == 0) {
-				if (usermatch(&myfile, argv[i]) == false) {
+			else if (strcmp(argv[i], OPTION_USER) == 0) {
+				if (usermatch(&myfile, argv[i+1]) == false) {
 					break;
 				}
 			}
-
-			if (strcmp(argv[i-1], OPTION_NAME) == 0) {
-				if (fnmatch(argv[i], basename((char*)file_name_copy), 0) != 0) {
+			else if (strcmp(argv[i], OPTION_NAME) == 0) {
+				if (fnmatch(argv[i+1], basename((char*)file_name_copy), 0) != 0) {
 					break;
 				}
 			}
-
-			if (strcmp(argv[i-1], OPTION_PATH) == 0) {
-				if (fnmatch(argv[i], file_name, FNM_PATHNAME) != 0) {
+			else if (strcmp(argv[i], OPTION_PATH) == 0) {
+				if (fnmatch(argv[i+1], file_name, FNM_PATHNAME) != 0) {
 					break;
 				}
 			}
-
-			if (strcmp(argv[i-1], OPTION_TYPE) == 0) {
-				if (argv[i][0] != get_file_type(&myfile, FILETYPEMODE_TYPE)) {
+			else if (strcmp(argv[i], OPTION_TYPE) == 0) {
+				if (argv[i+1][0] != get_file_type(&myfile, FILETYPEMODE_TYPE)) {
 					break;
 				}
 			}
-	
 			/* OPTION_NAME clause -> Pfusch? */
-			if (strcmp(argv[i-1], OPTION_LS) == 0 && lsed == false && strcmp(argv[i-2], OPTION_NAME) != 0) {
+			else if (strcmp(argv[i], OPTION_LS) == 0 && lsed == false) {
 				ls(&myfile, file_name);
 				lsed = true;
 			}
 			/* print it if invoked explicitely or nothing lsed yet */
-			if ( (strcmp(argv[i-1], OPTION_PRINT) == 0 && printed == false) || (i==argc && printed == false && lsed == false) ) {
-				printf("%s\n", file_name);
-				printed = true;
+			else if ( (strcmp(argv[i], OPTION_PRINT) == 0 ) || ( (i+1) == argc && lsed == false) ) {
+				printme = true;
 			}
+			/* all params allready checked so assert just makes trouble here
+			else {
+				assert(0);
+			}
+			*/
 
 		}
+
+		if (printme == true) {
+			printf("%s\n", file_name);
+		}
+
 		/* if file is subdirectory descend into hierarchy */
 		if ( get_file_type(&myfile, FILETYPEMODE_TYPE) == 'd' && mode == DOFILEMODE_OTHER ) {
 			do_dir(file_name, argv, argc);
