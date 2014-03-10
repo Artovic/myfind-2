@@ -459,26 +459,24 @@ void ls(const struct stat * file, const char * file_name) {
 	printf("%lu ", file->st_nlink);
 
 	/* lookup name for UID */
-	if ( (pwd = getpwuid(file->st_uid)) == NULL) {
+	if ((pwd = getpwuid(file->st_uid)) == NULL) {
 		printf("%d ", file->st_uid);
 	}
 	else {
 		printf("%s ", pwd->pw_name);
+		pwd = NULL;
 	}
 
-	pwd = NULL;
 
 	/* lookup name for GID */
-        grp = getgrgid(file->st_gid);
-
-        if (grp == NULL) {
+        if ((grp = getgrgid(file->st_gid)) == NULL) {
                 printf("%d ", file->st_gid);
         }
         else {
                 printf("%s ", grp->gr_name);
+        	grp = NULL;
         }
 
-        grp = NULL;
 
 	/* print file size */
         printf("%lu ", file->st_size);
