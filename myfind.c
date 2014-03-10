@@ -119,7 +119,7 @@ int main(int argc, const char *const *argv) {
 				fprintf(stderr, "%s: Option %s needs an argument of [bcdpfls].\n\n", progname, argv[i]);
 				usage();
 				}
-
+				/* skip next argument as it's an argument for this one */
 				i++;
 				}
 			}
@@ -232,8 +232,9 @@ void do_file(const char * file_name, const int mode, const char * const * argv, 
 					break;
 				}
 			}
-
-			if (strcmp(argv[i-1], OPTION_LS) == 0 && lsed == false) {
+	
+			/* OPTION_NAME clause -> Pfusch? */
+			if (strcmp(argv[i-1], OPTION_LS) == 0 && lsed == false && strcmp(argv[i-2], OPTION_NAME) != 0) {
 				ls(&myfile, file_name);
 				lsed = true;
 			}
