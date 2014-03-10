@@ -103,29 +103,38 @@ int main(int argc, const char *const *argv) {
 	if (argc <2) {
 		usage();
 	}
-	for(i=3; i<= argc; i++) {
-		/* OPTION_TYPE must be either bcdpfls */
-		if  (strcmp(argv[i-1], OPTION_TYPE) == 0) {
-			if (i == argc || (strcmp(argv[i], "b") != 0 && strcmp(argv[i], "c") != 0
-			&& strcmp(argv[i], "d") != 0 && strcmp(argv[i], "p") != 0
-			&& strcmp(argv[i], "f") != 0 && strcmp(argv[i], "l") != 0
-			&& strcmp(argv[i], "s") != 0)
-			) {
-				fprintf(stderr, "%s: Option %s needs an argument of [bcdpfls].\n\n", progname, argv[i-1]);
+	for(i=2; i<argc; i++) {
+		/* OPTION_USER, OPTION_NAME, OPTION_PATH and OPTION_TYPE need an argument */
+		if (strcmp(argv[i], OPTION_USER) == 0 || strcmp(argv[i], OPTION_NAME) == 0 || strcmp(argv[i], OPTION_PATH) == 0 || strcmp(argv[i], OPTION_TYPE) == 0) {
+			if (i+1 == argc) {
+				fprintf(stderr, "%s: Option %s needs an argument.\n\n", progname, argv[i]);
 				usage();
+                        }
+			/* OPTION_TYPE's argument must be in [bcdpfls] */
+			else {
+				if (strcmp(argv[i], OPTION_TYPE) == 0 && strcmp(argv[i+1], "b") != 0 && strcmp(argv[i+1], "c") != 0
+				&& strcmp(argv[i+1], "d") != 0 && strcmp(argv[i+1], "p") != 0
+				&& strcmp(argv[i+1], "f") != 0 && strcmp(argv[i+1], "l") != 0 && strcmp(argv[i+1], "s") != 0)
+				{
+				fprintf(stderr, "%s: Option %s needs an argument of [bcdpfls].\n\n", progname, argv[i]);
+				usage();
+				}
+
+				i++;
+				}
 			}
+		/* unexpected parameter */
+		else if (strcmp(argv[i], OPTION_LS) != 0 && strcmp(argv[i], OPTION_PRINT) != 0 && strcmp(argv[i], OPTION_NOUSER) != 0) {
+			fprintf(stderr, "%s: Unknown parameter given: %s .\n\n", progname, argv[i]);
+			usage();
 		}
-		/* OPTION_USER, OPTION_NAME and OPTION_PATH need an argument */
-		if ( (strcmp(argv[i-1], OPTION_USER) == 0 || strcmp(argv[i-1], OPTION_NAME) == 0 || strcmp(argv[i-1], OPTION_PATH) == 0) && i == argc) {
-				fprintf(stderr, "%s: Option %s needs an argument.\n\n", progname, argv[i-1]);
-				usage();
-		}
-	}	
+	}
 
 	do_dir(argv[1], argv, argc);
 
 	return EXIT_SUCCESS;
 }
+
 
 /**
  *
