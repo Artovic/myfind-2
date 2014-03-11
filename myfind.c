@@ -74,12 +74,12 @@ const char *progname = NULL;
  */
 
 void usage(void);
-void do_file(const char * file_name, const int mode, const char * const * argv, int argc);
-void do_dir(const char * dir_name, const char * const * argv, int argc);
-char get_file_type(const struct stat * file, const int mode);
-void ls(const struct stat * file, const char * file_name);
-boolean_t nouser(const struct stat * file);
-boolean_t usermatch(const struct stat * file, const char * arg);
+void do_file(const char *file_name, const int mode, const char * const *argv, int argc);
+void do_dir(const char *dir_name, const char * const *argv, int argc);
+char get_file_type(const struct stat *file, const int mode);
+void ls(const struct stat *file, const char *file_name);
+boolean_t nouser(const struct stat *file);
+boolean_t usermatch(const struct stat *file, const char *arg);
 
 /**
  *
@@ -95,7 +95,7 @@ boolean_t usermatch(const struct stat * file, const char * arg);
  *
  */
 
-int main(int argc, const char *const *argv) {
+int main(int argc, const char * const *argv) {
 
 	int i = 0;
 
@@ -161,7 +161,7 @@ void usage(void) {
  * \param argc argc passed through from main()
  *
  */
-void do_file(const char * file_name, const int mode, const char * const * argv, int argc) {	
+void do_file(const char *file_name, const int mode, const char * const *argv, int argc) {	
 
 	struct stat myfile;
 	int i = 0;
@@ -262,7 +262,7 @@ void do_file(const char * file_name, const int mode, const char * const * argv, 
  * \param argc argc passed through from main()
  *
  */
-void do_dir(const char * dir_name, const char * const * argv, int argc) {
+void do_dir(const char *dir_name, const char * const *argv, int argc) {
 
 	DIR *mydirp = NULL;
 	struct dirent *thisdir = NULL;
@@ -340,7 +340,7 @@ void do_dir(const char * dir_name, const char * const * argv, int argc) {
  *
  */
 
-char get_file_type(const struct stat * file, const int mode) {
+char get_file_type(const struct stat *file, const int mode) {
 
 	char retval = 'u';
 
@@ -370,7 +370,7 @@ char get_file_type(const struct stat * file, const int mode) {
  *
  */
 
-void ls(const struct stat * file, const char * file_name) {
+void ls(const struct stat *file, const char *file_name) {
 
 	char permissions[10] = {0};
 	char timestring[18] = {0};
@@ -389,7 +389,7 @@ void ls(const struct stat * file, const char * file_name) {
 
 	/* parse st_mtime, write it into timestring and print it */
 	ptime = localtime(&file->st_mtime);
-	strftime(timestring,30,"%b %d %H:%M %Y", ptime);
+	strftime(timestring,18,"%b %d %H:%M %Y", ptime);
 
 	/* user permissions */
 	if ( file->st_mode & S_IRUSR ) { permissions[0] = 'r'; };
@@ -442,25 +442,25 @@ void ls(const struct stat * file, const char * file_name) {
 
 	/* lookup name for UID */
 	if ((pwd = getpwuid(file->st_uid)) == NULL) {
-		printf("%d ", file->st_uid);
+		printf(" %d", file->st_uid);
 	}
 	else {
-		printf("%s ", pwd->pw_name);
+		printf(" %s", pwd->pw_name);
 		pwd = NULL;
 	}
 
 
 	/* lookup name for GID */
         if ((grp = getgrgid(file->st_gid)) == NULL) {
-                printf("%d ", file->st_gid);
+                printf(" %d", file->st_gid);
         }
         else {
-                printf("%s ", grp->gr_name);
+                printf(" %s", grp->gr_name);
         	grp = NULL;
         }
 
 	/* print file size, timestring, filename*/
-        printf("%lu %s %s", file->st_size, timestring, file_name);
+        printf(" %lu %s %s", file->st_size, timestring, file_name);
 
 	/* in case it's a symlink, print it's destination */
 	if (filetype == 'l') {
@@ -500,7 +500,7 @@ void ls(const struct stat * file, const char * file_name) {
  * \return true if no username found for uid
  *
  */
-boolean_t nouser(const struct stat * file) {
+boolean_t nouser(const struct stat *file) {
 
 	struct passwd *pwd = NULL;
 
@@ -520,15 +520,16 @@ boolean_t nouser(const struct stat * file) {
  * \return true if file's uid matches given uid or username 
  *
  */
-boolean_t usermatch(const struct stat * file, const char * arg) {
+boolean_t usermatch(const struct stat *file, const char *arg) {
 
 	struct passwd *pwd = NULL;
 	unsigned int i = 0;
 
 	pwd = getpwnam(arg);
 	if (pwd != NULL) {
-		/* it's a name */
+		/* it's a name and we've found it*/
 		if (file->st_uid == pwd->pw_uid) {
+			/* ...and it even matches arg! */
 			pwd = NULL;
 			return true;
 		}
@@ -541,7 +542,8 @@ boolean_t usermatch(const struct stat * file, const char * arg) {
 				return false;
 			}
 		}
-		/* as there are no non-numeric arg, we don't care about them so second arg for strtol() is NULL */
+		/* as we allready checked that arg is just numeric,
+		we don't care about non numeric chars so second arg for strtol() is NULL */
 		/* typecast to make it portable between 32/64 bit */
 		if ((long) file->st_uid == strtol(arg, NULL, 10)) {
 			return true;
