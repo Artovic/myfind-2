@@ -98,6 +98,7 @@ boolean_t usermatch(const struct stat *file, const char *arg);
 int main(int argc, const char * const *argv) {
 
 	int i = 0;
+	struct stat myfile;
 
 	progname = basename((char*) argv[0]);
 
@@ -112,8 +113,8 @@ int main(int argc, const char * const *argv) {
 				fprintf(stderr, "%s: Option %s needs an argument.\n\n", progname, argv[i]);
 				usage();
                         }
-			/* OPTION_TYPE's argument must be in [bcdpfls] */
 			else {
+				/* OPTION_TYPE's argument must be in [bcdpfls] */
 				if (strcmp(argv[i], OPTION_TYPE) == 0 && strcmp(argv[i+1], "b") != 0 && strcmp(argv[i+1], "c") != 0
 				&& strcmp(argv[i+1], "d") != 0 && strcmp(argv[i+1], "p") != 0
 				&& strcmp(argv[i+1], "f") != 0 && strcmp(argv[i+1], "l") != 0 && strcmp(argv[i+1], "s") != 0)
@@ -121,6 +122,8 @@ int main(int argc, const char * const *argv) {
 				fprintf(stderr, "%s: Option %s needs an argument of [bcdpfls].\n\n", progname, argv[i]);
 				usage();
 				}
+				/* TODO: wenn OPTION_USER mit umbekanntem User aufgerufen wird -> aussteigen! */
+
 				/* skip next argument as it's an argument for this one */
 				i++;
 				}
@@ -132,7 +135,15 @@ int main(int argc, const char * const *argv) {
 		}
 	}
 
-	do_dir(argv[1], argv, argc);
+
+	/* TODO: schöner machen, funktion um stat herum bauen da jetzt mehr als 1x benötigt */
+	if(lstat(argv[1], &myfile) == -1) { exit(EXIT_FAILURE); }
+	if (get_file_type(&myfile, FILETYPEMODE_TYPE) == 'd') {
+		do_dir(argv[1], argv, argc);
+	}
+	else {
+		do_file(argv[1], DOFILEMODE_SELF, argv, argc);
+	}
 
 	return EXIT_SUCCESS;
 }
@@ -228,7 +239,7 @@ void do_file(const char *file_name, const int mode, const char * const *argv, in
 				lsed = true;
 			}
 			/* print it if invoked explicitely or nothing lsed yet */
-			else if ( (strcmp(argv[i], OPTION_PRINT) == 0 ) || ( (i+1) == argc && lsed == false) ) {
+			else if ( (strcmp(argv[i], OPTION_PRINT) == 0 && (strcmp(argv[i-1], OPTION_NAME) != 0)) || ( (i+1) == argc && lsed == false) ) {
 				printme = true;
 			}
 			/* all params allready checked so assert just makes trouble here
