@@ -166,7 +166,7 @@ void do_file(const char * file_name, const int mode, const char * const * argv, 
 	struct stat myfile;
 	int i = 0;
 	/* make sure we print if for-loop is not run */
-	boolean_t printme = true;
+	boolean_t printme = false;
 	boolean_t lsed = false;
 	char *file_name_copy = NULL;
 
@@ -185,29 +185,17 @@ void do_file(const char * file_name, const int mode, const char * const * argv, 
 
 	errno = 0;
 	if ( lstat(file_name, &myfile) == -1 ) {
-		fprintf(stderr, "%s: Could not stat %s - ", progname, file_name);
-		switch(errno) {
-			case(EACCES): fprintf(stderr, "permission denied while opening file.\n"); break;
-			case(EBADF): fprintf(stderr, "not a valid file descriptor.\n"); break;
-			case(EFAULT): fprintf(stderr, "bad address.\n"); break;
-			case(ELOOP): fprintf(stderr, "too many symbolic links encountered while resolving path.\n"); break;
-			case(ENAMETOOLONG): fprintf(stderr, "length exceeds ${PATH_MAX} or ${NAME_MAX}.\n"); break;
-			case(ENOENT): fprintf(stderr, "not found.\n"); break;
-			case(ENOTDIR): fprintf(stderr, "not a directory.\n"); break;
-			case(EMFILE): fprintf(stderr, "too many open files (process).\n"); break;
-			case(ENFILE): fprintf(stderr, "too many open files (system).\n"); break;
-			case(ENOMEM): fprintf(stderr, "memory exhausted.\n"); break;
-			case(EOVERFLOW): fprintf(stderr, "error in definition of struct stat.\n"); break;
-			case(EIO): fprintf(stderr, "error while reading from file system.\n"); break;
-			default: fprintf(stderr, "unknown error, errno is: %d.\n", errno); break;
-		}
+		fprintf(stderr, "%s: Could not stat %s - %s\n", progname, file_name, strerror(errno));
 	}
 	else {
+
+		/* make sure we print if no furhter arguments given */
+		if(argc <= 2) {
+			printme = true;
+		}
+		
 		/* parse passed parameters */
 		for(i=2; i<argc; i++) {
-
-			/* we have args so printing may not be desirable - evaluate later */
-			printme = false;
 
 			if (strcmp(argv[i], OPTION_NOUSER) == 0) {
 				if (nouser(&myfile) == false) {
@@ -291,19 +279,7 @@ void do_dir(const char * dir_name, const char * const * argv, int argc) {
 
 	errno = 0;
         if ( (mydirp = opendir(dir_name)) == NULL) {
-		fprintf(stderr, "%s: Error opening %s - ", progname, dir_name);	
-		switch(errno) {
-			case(EACCES): fprintf(stderr, "permission denied while opening directory.\n"); break;
-			case(EBADF): fprintf(stderr, "not a valid file descriptor.\n"); break;
-			case(ELOOP): fprintf(stderr, "too many symbolic links encountered while resolving path.\n"); break;
-			case(ENAMETOOLONG): fprintf(stderr, "length exceeds ${PATH_MAX} or ${NAME_MAX}.\n"); break;
-			case(ENOENT): fprintf(stderr, "not found.\n"); break;
-			case(ENOTDIR): fprintf(stderr, "not a directory.\n"); break;
-			case(EMFILE): fprintf(stderr, "too many open files (process).\n"); break;
-			case(ENFILE): fprintf(stderr, "too many open files (system).\n"); break;
-			case(ENOMEM): fprintf(stderr, "memory exhausted.\n"); break;
-			default: fprintf(stderr, "unknown error, errno is: %d.\n", errno); break;
-		}
+		fprintf(stderr, "%s: Error opening %s - %s\n", progname, dir_name, strerror(errno));	
         }
         else {
 		/* directory successfully opened, now read contents */
@@ -335,25 +311,22 @@ void do_dir(const char * dir_name, const char * const * argv, int argc) {
 			}
 		}
 
-		/* checking errno in while loops makes no sense as it's allways 0 (thisdir != NULL) */
+		/* checking errno in while loop makes no sense as it's allways 0 (thisdir != NULL) */
 		if (errno != 0) {
-			fprintf(stderr, "%s: Error reading directory entry in %s - ", progname, dir_name);	
-			switch(errno) {
-				case(EACCES): fprintf(stderr, "permission denied while opening directory.\n"); break;
-				default: fprintf(stderr, "unknown error. errno is: %d .\n", errno); break;
-			}
+			fprintf(stderr, "%s: Error reading directory entry in %s - %s\n", progname, dir_name, strerror(errno));	
 		}
 
-	/* thisdir allready NULL at this time */
+		/* close directory */
+		errno = 0;
+		if (closedir(mydirp) != 0) {
+			fprintf(stderr, "%s: Error closing directory %s - %s\n", progname, dir_name, strerror(errno));	
+		} 
+
+		mydirp = NULL;
+		/* thisdir allready NULL at this time so we don't need to NULL it*/
 
         }
 
-	if (closedir(mydirp) != 0) {
-		/* does an error message make sense in this case ?
-		fprintf(stderr, "%s: Error closing directory %s\n", progname, dir_name);
-		*/
-	} 
-	mydirp = NULL;
 
 }
 
@@ -519,22 +492,7 @@ void ls(const struct stat * file, const char * file_name) {
 		}
 		else {
 			printf(" -> ERROR READING LINK");
-			fprintf(stderr, "%s: Error reading link %s - ", progname, file_name);	
-			switch(errno) {
-				case(EACCES): fprintf(stderr, "permission denied while opening directory.\n"); break;
-				case(EBADF): fprintf(stderr, "not a valid file descriptor.\n"); break;
-				case(ELOOP): fprintf(stderr, "too many symbolic links encountered while resolving path.\n"); break;
-				case(ENAMETOOLONG): fprintf(stderr, "length exceeds ${PATH_MAX} or ${NAME_MAX}.\n"); break;
-				case(ENOENT): fprintf(stderr, "not found.\n"); break;
-				case(ENOTDIR): fprintf(stderr, "not a directory.\n"); break;
-				case(EMFILE): fprintf(stderr, "too many open files (process).\n"); break;
-				case(ENFILE): fprintf(stderr, "too many open files (system).\n"); break;
-				case(ENOMEM): fprintf(stderr, "memory exhausted.\n"); break;
-				case(EIO): fprintf(stderr, "error while reading from file system.\n"); break;
-				case(EINVAL): fprintf(stderr, "buffer variable not positive or file not a symbolic link.\n"); break;
-				case(EFAULT): fprintf(stderr, "buffer variable extends outside the address space.\n"); break;
-				default: fprintf(stderr, "unknown error, errno is: %d.\n", errno); break;
-			}
+			fprintf(stderr, "%s: Error reading link %s - %s\n", progname, file_name, strerror(errno));	
 		}
 
 		free(linkdestination);
