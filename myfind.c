@@ -387,6 +387,10 @@ void ls(const struct stat * file, const char * file_name) {
 	/* initialize 9 of 10 chars of permissions with - */
 	memset(permissions, '-', 9 );
 
+	/* parse st_mtime, write it into timestring and print it */
+	ptime = localtime(&file->st_mtime);
+	strftime(timestring,30,"%b %d %H:%M %Y", ptime);
+
 	/* user permissions */
 	if ( file->st_mode & S_IRUSR ) { permissions[0] = 'r'; };
 	if ( file->st_mode & S_IWUSR ) { permissions[1] = 'w'; };
@@ -433,14 +437,8 @@ void ls(const struct stat * file, const char * file_name) {
 	}
 
 
-	/* print inodenumber */
-	printf("%lu ", file->st_ino);
-	/* print blockcount as 1k blocks*/
-	printf("%lu ", (file->st_blocks / 2));
-	/* print type and permissions */
-	printf("%c%s ", filetype, permissions);
-	/* print hardlink count */
-	printf("%lu ", (long) file->st_nlink);
+	/* print inodenumber, blockcount as 1k blocks, type+permissions, hardlink count */
+	printf("%lu %lu %c%s %lu", file->st_ino, (file->st_blocks / 2), filetype, permissions, (long) file->st_nlink);
 
 	/* lookup name for UID */
 	if ((pwd = getpwuid(file->st_uid)) == NULL) {
@@ -461,17 +459,8 @@ void ls(const struct stat * file, const char * file_name) {
         	grp = NULL;
         }
 
-
-	/* print file size */
-        printf("%lu ", file->st_size);
-
-	/* parse st_mtime, write it into timestring and print it */
-	ptime = localtime(&file->st_mtime);
-	strftime(timestring,30,"%b %d %H:%M %Y", ptime);
-	printf("%s ", timestring);
-
-	/* print file name */
-	printf("%s", file_name);
+	/* print file size, timestring, filename*/
+        printf("%lu %s %s", file->st_size, timestring, file_name);
 
 	/* in case it's a symlink, print it's destination */
 	if (filetype == 'l') {
