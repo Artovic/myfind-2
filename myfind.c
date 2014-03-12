@@ -128,8 +128,8 @@ int main(int argc, const char * const *argv) {
 
 				/* TODO: wenn OPTION_USER mit umbekanntem User aufgerufen wird -> aussteigen! */
 				if (strcmp(argv[i], OPTION_USER) == 0 && isnumeric(argv[i+1]) == false && (pwd = getpwnam(argv[i+1])) == NULL) {
-					fprintf(stderr, "%s: User not found: %s\n\n", progname, argv[i+1]);
-					usage();
+					fprintf(stderr, "%s: User not found: %s\n", progname, argv[i+1]);
+					exit(EXIT_FAILURE);
 				}
 
 			}
