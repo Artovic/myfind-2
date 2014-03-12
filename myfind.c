@@ -100,6 +100,7 @@ int main(int argc, const char * const *argv) {
 
 	int i = 0;
 	struct stat myfile;
+	struct passwd *pwd = NULL;
 
 	/* set global *progname to stripped argv[0] */
 	progname = basename((char*) argv[0]);
@@ -124,7 +125,12 @@ int main(int argc, const char * const *argv) {
 				fprintf(stderr, "%s: Option %s needs an argument of [bcdpfls].\n\n", progname, argv[i]);
 				usage();
 				}
+
 				/* TODO: wenn OPTION_USER mit umbekanntem User aufgerufen wird -> aussteigen! */
+				if (strcmp(argv[i], OPTION_USER) == 0 && isnumeric(argv[i+1]) == false && (pwd = getpwnam(argv[i+1])) == NULL) {
+					fprintf(stderr, "%s: User not found: %s\n\n", progname, argv[i+1]);
+					usage();
+				}
 
 			}
 
