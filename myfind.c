@@ -187,9 +187,10 @@ void do_file(const char *file_name, const int mode, const char * const *argv, in
 	struct stat myfile;
 	int i = 0;
 	/* make sure we print if for-loop is not run */
-	bool printme = false;
+	bool printed = false;
 	bool lsed = false;
 	char *file_name_copy = NULL;
+	bool match = false;
 
 	/* basename/dirname may modify passed string so make a copy... */
 	file_name_copy = malloc((strlen(file_name)+1)*sizeof(char));
@@ -212,7 +213,7 @@ void do_file(const char *file_name, const int mode, const char * const *argv, in
 
 		/* make sure we print if no furhter arguments given */
 		if(argc <= 2) {
-			printme = true;
+			match = true;
 		}
 		
 		/* parse passed parameters */
@@ -222,45 +223,56 @@ void do_file(const char *file_name, const int mode, const char * const *argv, in
 				if (nouser(&myfile) == false) {
 					break;
 				}
+				match = true;
 			}
 			else if (strcmp(argv[i], OPTION_USER) == 0) {
-				if (usermatch(&myfile, argv[i+1]) == false) {
+				if (usermatch(&myfile, argv[++i]) == false) {
 					break;
 				}
+				match = true;
 			}
 			else if (strcmp(argv[i], OPTION_NAME) == 0) {
-				if (fnmatch(argv[i+1], basename((char*)file_name_copy), 0) != 0) {
+				if (fnmatch(argv[++i], basename((char*)file_name_copy), 0) != 0) {
 					break;
 				}
+				match = true;
 			}
 			else if (strcmp(argv[i], OPTION_PATH) == 0) {
-				if (fnmatch(argv[i+1], file_name, FNM_PATHNAME) != 0) {
+				if (fnmatch(argv[++i], file_name, FNM_PATHNAME) != 0) {
 					break;
 				}
+				match = true;
 			}
 			else if (strcmp(argv[i], OPTION_TYPE) == 0) {
-				if (argv[i+1][0] != get_file_type(&myfile, FILETYPEMODE_TYPE)) {
+				if (argv[++i][0] != get_file_type(&myfile, FILETYPEMODE_TYPE)) {
 					break;
 				}
+				match = true;
 			}
-			/* OPTION_NAME clause -> Pfusch? */
-			else if (strcmp(argv[i], OPTION_LS) == 0 && lsed == false) {
+			else if (strcmp(argv[i], OPTION_LS) == 0) {
 				ls(&myfile, file_name);
 				lsed = true;
 			}
 			/* print it if invoked explicitely or nothing lsed yet */
-			else if ( (strcmp(argv[i], OPTION_PRINT) == 0 && (strcmp(argv[i-1], OPTION_NAME) != 0)) || ( (i+1) == argc && lsed == false) ) {
-				printme = true;
+			/* else if ( (strcmp(argv[i], OPTION_PRINT) == 0 && (strcmp(argv[i-1], OPTION_NAME) != 0)) || ( (i+1) == argc && lsed == false) ) { */
+			else if (strcmp(argv[i], OPTION_PRINT) == 0) {
+				printf("%s\n", file_name);
+				printed = true;
 			}
-			/* all params allready checked so assert just makes trouble here
+			/* all params allready checked so assert just makes trouble here */
 			else {
 				assert(0);
 			}
-			*/
+
 
 		}
 
-		if (printme == true) {
+		/*
+		printf("match: %d\n", match);
+		*/
+
+
+		if (match == true && printed == false && lsed == false) {
 			printf("%s\n", file_name);
 		}
 
