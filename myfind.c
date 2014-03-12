@@ -31,6 +31,7 @@
 #include <errno.h>
 #include <ctype.h>
 #include <assert.h>
+#include <stdbool.h>
 
 
 
@@ -61,8 +62,6 @@
  * -------------------------------------------------------------- typedefs --
  */
 
-typedef enum boolean { false, true } boolean_t;
-
 /*
  * --------------------------------------------------------------- globals --
  */
@@ -78,8 +77,8 @@ void do_file(const char *file_name, const int mode, const char * const *argv, in
 void do_dir(const char *dir_name, const char * const *argv, int argc);
 char get_file_type(const struct stat *file, const int mode);
 void ls(const struct stat *file, const char *file_name);
-boolean_t nouser(const struct stat *file);
-boolean_t usermatch(const struct stat *file, const char *arg);
+bool nouser(const struct stat *file);
+bool usermatch(const struct stat *file, const char *arg);
 
 /**
  *
@@ -177,8 +176,8 @@ void do_file(const char *file_name, const int mode, const char * const *argv, in
 	struct stat myfile;
 	int i = 0;
 	/* make sure we print if for-loop is not run */
-	boolean_t printme = false;
-	boolean_t lsed = false;
+	bool printme = false;
+	bool lsed = false;
 	char *file_name_copy = NULL;
 
 	/* basename/dirname may modify passed string so make a copy... */
@@ -511,7 +510,7 @@ void ls(const struct stat *file, const char *file_name) {
  * \return true if no username found for uid
  *
  */
-boolean_t nouser(const struct stat *file) {
+bool nouser(const struct stat *file) {
 
 	struct passwd *pwd = NULL;
 
@@ -531,7 +530,7 @@ boolean_t nouser(const struct stat *file) {
  * \return true if file's uid matches given uid or username 
  *
  */
-boolean_t usermatch(const struct stat *file, const char *arg) {
+bool usermatch(const struct stat *file, const char *arg) {
 
 	struct passwd *pwd = NULL;
 	unsigned int i = 0;
