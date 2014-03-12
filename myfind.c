@@ -66,6 +66,7 @@
  * --------------------------------------------------------------- globals --
  */
 
+/* declare program name instead of allways invoking basename(argv[0]) */
 const char *progname = NULL;
 
 /*
@@ -79,6 +80,7 @@ char get_file_type(const struct stat *file, const int mode);
 void ls(const struct stat *file, const char *file_name);
 bool nouser(const struct stat *file);
 bool usermatch(const struct stat *file, const char *arg);
+bool isnumeric(const char *arg);
 
 /**
  *
@@ -99,6 +101,7 @@ int main(int argc, const char * const *argv) {
 	int i = 0;
 	struct stat myfile;
 
+	/* set global *progname to stripped argv[0] */
 	progname = basename((char*) argv[0]);
 
 	/* Syntax check of passed params */
@@ -123,10 +126,12 @@ int main(int argc, const char * const *argv) {
 				}
 				/* TODO: wenn OPTION_USER mit umbekanntem User aufgerufen wird -> aussteigen! */
 
-				/* skip next argument as it's an argument for this one */
-				i++;
-				}
 			}
+
+			/* skip next argument as it's an argument for this one */
+			i++;
+		}
+
 		/* unexpected parameter */
 		else if (strcmp(argv[i], OPTION_LS) != 0 && strcmp(argv[i], OPTION_PRINT) != 0 && strcmp(argv[i], OPTION_NOUSER) != 0) {
 			fprintf(stderr, "%s: Unknown parameter given: %s .\n\n", progname, argv[i]);
@@ -135,13 +140,19 @@ int main(int argc, const char * const *argv) {
 	}
 
 
-	/* TODO: schöner machen, funktion um stat herum bauen da jetzt mehr als 1x benötigt */
-	if(lstat(argv[1], &myfile) == -1) { exit(EXIT_FAILURE); }
-	if (get_file_type(&myfile, FILETYPEMODE_TYPE) == 'd') {
-		do_dir(argv[1], argv, argc);
+	/* call functions depending on file type  */
+	errno = 0;
+	if ( lstat(argv[1], &myfile) == -1 ) {
+		fprintf(stderr, "%s: Could not stat %s - %s\n", progname, argv[1], strerror(errno));
+		exit(EXIT_FAILURE);
 	}
 	else {
-		do_file(argv[1], DOFILEMODE_SELF, argv, argc);
+		if (get_file_type(&myfile, FILETYPEMODE_TYPE) == 'd') {
+			do_dir(argv[1], argv, argc);
+		}
+		else {
+			do_file(argv[1], DOFILEMODE_SELF, argv, argc);
+		}
 	}
 
 	return EXIT_SUCCESS;
@@ -533,26 +544,21 @@ bool nouser(const struct stat *file) {
 bool usermatch(const struct stat *file, const char *arg) {
 
 	struct passwd *pwd = NULL;
-	unsigned int i = 0;
 
 	pwd = getpwnam(arg);
-	if (pwd != NULL) {
-		/* it's a name and we've found it*/
-		if (file->st_uid == pwd->pw_uid) {
-			/* ...and it even matches arg! */
-			pwd = NULL;
-			return true;
-		}
+
+	/* check user name first as it may be numeric */
+	if (pwd != NULL && file->st_uid == pwd->pw_uid) {
+		/* it's a user name name and it matches */
+		pwd = NULL;
+		return true;
 	}
 	else {
 		/* is it a uid? */
-		for (i=0; i<strlen(arg); i++) {
-			if (!isdigit(arg[i])) {
-				/* no uid, return false */
-				return false;
-			}
+		if(isnumeric(arg) == false) {
+			return false;
 		}
-		/* as we allready checked that arg is just numeric,
+		/* as we've allready checked that arg is just numeric,
 		we don't care about non numeric chars so second arg for strtol() is NULL */
 		/* typecast to make it portable between 32/64 bit */
 		if ((long) file->st_uid == strtol(arg, NULL, 10)) {
@@ -562,6 +568,21 @@ bool usermatch(const struct stat *file, const char *arg) {
 
 	return false;
 
+}
+
+
+bool isnumeric(const char *arg) {
+
+	int i = 0;
+
+	while(arg[i] != '\0') {
+		if(!isdigit(arg[i])) {
+			return false;
+		}
+		i++;
+	}
+
+	return true;
 }
 
 /*
