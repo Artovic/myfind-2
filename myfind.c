@@ -421,10 +421,9 @@ void ls(const struct stat *file, const char *file_name) {
 
 	/* parse st_mtime, write it into timestring and print it */
 	ptime = localtime(&file->st_mtime);
-	/* TODO 
-	strftime(timestring,18,"%b %d %H:%M %Y", ptime); */
 	strftime(timestring,18,"%b %d %H:%M", ptime);
 
+	/* fill permission array */
 	/* user permissions */
 	if (file->st_mode & S_IRUSR) { permissions[0] = 'r'; };
 	if (file->st_mode & S_IWUSR) { permissions[1] = 'w'; };
@@ -432,7 +431,6 @@ void ls(const struct stat *file, const char *file_name) {
 		permissions[2] = (file->st_mode & S_IXUSR) ? 's' : 'S';
 	}
 	else if (file->st_mode & S_IXUSR) { permissions[2] = 'x'; };
-	
 	/* group permissions */
 	if (file->st_mode & S_IRGRP) { permissions[3] = 'r'; };
 	if (file->st_mode & S_IWGRP) { permissions[4] = 'w'; };
@@ -440,7 +438,6 @@ void ls(const struct stat *file, const char *file_name) {
 		permissions[5] = (file->st_mode & S_IXGRP) ? 's' : 'S';
 	}
 	else if (file->st_mode & S_IXGRP) { permissions[5] = 'x'; };
-
 	/* all permissions */
 	if (file->st_mode & S_IROTH) { permissions[6] = 'r'; };
 	if (file->st_mode & S_IWOTH) { permissions[7] = 'w'; };
@@ -452,29 +449,29 @@ void ls(const struct stat *file, const char *file_name) {
 
 	/* print inodenumber, blockcount as 1k blocks, type+permissions, hardlink count */
 	/* typecast file->st_nlink to long for 32/64 bit compatibility */
-	printf("%lu %lu %c%s %lu", file->st_ino, (file->st_blocks / 2), filetype, permissions, (long) file->st_nlink);
+	printf("%6lu %4lu %c%s %3lu", file->st_ino, (file->st_blocks / 2), filetype, permissions, (long) file->st_nlink);
 
 	/* lookup name for UID */
 	if ((pwd = getpwuid(file->st_uid)) == NULL) {
-		printf(" %d", file->st_uid);
+		printf(" %-8d", file->st_uid);
 	}
 	else {
-		printf(" %s", pwd->pw_name);
+		printf(" %-8s", pwd->pw_name);
 		pwd = NULL;
 	}
 
 
 	/* lookup name for GID */
         if ((grp = getgrgid(file->st_gid)) == NULL) {
-                printf(" %d", file->st_gid);
+                printf(" %-8d", file->st_gid);
         }
         else {
-                printf(" %s", grp->gr_name);
+                printf(" %-8s", grp->gr_name);
         	grp = NULL;
         }
 
 	/* print file size, timestring, filename*/
-        printf(" %lu %s %s", file->st_size, timestring, file_name);
+        printf(" %8lu %s %s", file->st_size, timestring, file_name);
 
 	/* in case it's a symlink, print it's destination */
 	if (filetype == 'l') {
