@@ -400,7 +400,6 @@ char get_file_type(const struct stat *file, const int mode) {
 		retval = (mode == FILETYPEMODE_LS) ? '-' : 'f';
 	}
 
-
 	return retval;
 }
 
