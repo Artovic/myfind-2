@@ -230,45 +230,35 @@ void do_file(const char *file_name, const int mode, const char * const *argv, in
 					match = false;
 					break;
 				}
-				else {
-					match = true;
-				}
+				match = true;
 			}
 			else if (strcmp(argv[i], OPTION_USER) == 0) {
 				if (usernamematch(&myfile, argv[++i]) == false) {
 					match = false;
 					break;
 				}
-				else {
-					match = true;
-				}
+				match = true;
 			}
 			else if (strcmp(argv[i], OPTION_NAME) == 0) {
 				if (fnmatch(argv[++i], basename((char*)file_name_copy), 0) != 0) {
 					match = false;
 					break;
 				}
-				else {
-					match = true;
-				}
+				match = true;
 			}
 			else if (strcmp(argv[i], OPTION_PATH) == 0) {
 				if (fnmatch(argv[++i], file_name, FNM_PATHNAME) != 0) {
 					match = false;
 					break;
 				}
-				else {
-					match = true;
-				}
+				match = true;
 			}
 			else if (strcmp(argv[i], OPTION_TYPE) == 0) {
 				if (argv[++i][0] != get_file_type(&myfile, FILETYPEMODE_TYPE)) {
 					match = false;
 					break;
 				}
-				else {
-					match = true;
-				}
+				match = true;
 			}
 			else if (strcmp(argv[i], OPTION_LS) == 0) {
 				ls(&myfile, file_name);
