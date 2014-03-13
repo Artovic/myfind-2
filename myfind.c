@@ -126,7 +126,7 @@ int main(int argc, const char * const *argv) {
 				usage();
 				}
 
-				/* TODO: wenn OPTION_USER mit umbekanntem User aufgerufen wird -> aussteigen! */
+				/* if not numeric, OPTION_USER's argument must be a valid user name at this system */
 				if (strcmp(argv[i], OPTION_USER) == 0 && isnumeric(argv[i+1]) == false && (pwd = getpwnam(argv[i+1])) == NULL) {
 					fprintf(stderr, "%s: User not found: %s\n", progname, argv[i+1]);
 					exit(EXIT_FAILURE);
@@ -227,30 +227,35 @@ void do_file(const char *file_name, const int mode, const char * const *argv, in
 
 			if (strcmp(argv[i], OPTION_NOUSER) == 0) {
 				if (nouser(&myfile) == false) {
+					match = false;
 					break;
 				}
 				match = true;
 			}
 			else if (strcmp(argv[i], OPTION_USER) == 0) {
 				if (usermatch(&myfile, argv[++i]) == false) {
+					match = false;
 					break;
 				}
 				match = true;
 			}
 			else if (strcmp(argv[i], OPTION_NAME) == 0) {
 				if (fnmatch(argv[++i], basename((char*)file_name_copy), 0) != 0) {
+					match = false;
 					break;
 				}
 				match = true;
 			}
 			else if (strcmp(argv[i], OPTION_PATH) == 0) {
 				if (fnmatch(argv[++i], file_name, FNM_PATHNAME) != 0) {
+					match = false;
 					break;
 				}
 				match = true;
 			}
 			else if (strcmp(argv[i], OPTION_TYPE) == 0) {
 				if (argv[++i][0] != get_file_type(&myfile, FILETYPEMODE_TYPE)) {
+					match = false;
 					break;
 				}
 				match = true;
@@ -428,7 +433,9 @@ void ls(const struct stat *file, const char *file_name) {
 
 	/* parse st_mtime, write it into timestring and print it */
 	ptime = localtime(&file->st_mtime);
-	strftime(timestring,18,"%b %d %H:%M %Y", ptime);
+	/* TODO 
+	strftime(timestring,18,"%b %d %H:%M %Y", ptime); */
+	strftime(timestring,18,"%b %d %H:%M", ptime);
 
 	/* user permissions */
 	if ( file->st_mode & S_IRUSR ) { permissions[0] = 'r'; };
@@ -560,32 +567,16 @@ bool nouser(const struct stat *file) {
  *
  */
 bool usermatch(const struct stat *file, const char *arg) {
-
 	struct passwd *pwd = NULL;
-
 	pwd = getpwnam(arg);
 
-	/* check user name first as it may be numeric */
-	if (pwd != NULL && file->st_uid == pwd->pw_uid) {
-		/* it's a user name name and it matches */
-		pwd = NULL;
+	/* if ( ((pwd = getpwnam(arg))!= NULL && file->st_uid == pwd->pw_uid) || (isnumeric(arg) == true && (long) file->st_uid == strtol(arg, NULL, 10)) ) { */
+	if ( ((pwd = getpwnam(arg))!= NULL && file->st_uid == pwd->pw_uid) ) {
 		return true;
 	}
 	else {
-		/* is it a uid? */
-		if(isnumeric(arg) == false) {
-			return false;
-		}
-		/* as we've allready checked that arg is just numeric,
-		we don't care about non numeric chars so second arg for strtol() is NULL */
-		/* typecast to make it portable between 32/64 bit */
-		if ((long) file->st_uid == strtol(arg, NULL, 10)) {
-			return true;
-		}
+		return false;
 	}
-
-	return false;
-
 }
 
 
