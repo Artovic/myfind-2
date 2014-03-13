@@ -412,7 +412,6 @@ void ls(const struct stat *file, const char *file_name) {
 	char filetype = 0;
 	struct passwd *pwd = NULL;
 	struct group *grp = NULL;
-	struct tm *ptime = NULL;
 
 	filetype = get_file_type(file, FILETYPEMODE_LS);
 
@@ -420,8 +419,7 @@ void ls(const struct stat *file, const char *file_name) {
 	memset(permissions, '-', 9 );
 
 	/* parse st_mtime, write it into timestring and print it */
-	ptime = localtime(&file->st_mtime);
-	strftime(timestring,18,"%b %d %H:%M", ptime);
+	strftime(timestring,18,"%b %d %H:%M", localtime(&file->st_mtime));
 
 	/* fill permission array */
 	/* user permissions */
