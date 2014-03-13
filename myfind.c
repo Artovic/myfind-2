@@ -436,49 +436,28 @@ void ls(const struct stat *file, const char *file_name) {
 	strftime(timestring,18,"%b %d %H:%M", ptime);
 
 	/* user permissions */
-	if ( file->st_mode & S_IRUSR ) { permissions[0] = 'r'; };
-	if ( file->st_mode & S_IWUSR ) { permissions[1] = 'w'; };
-        if ( file->st_mode & S_ISUID ) {
-		if ( file->st_mode & S_IXUSR ) {
-			permissions[2] = 's';
-		}
-		else {
-			permissions[2] = 'S';
-		}
+	if (file->st_mode & S_IRUSR) { permissions[0] = 'r'; };
+	if (file->st_mode & S_IWUSR) { permissions[1] = 'w'; };
+        if (file->st_mode & S_ISUID) {
+		permissions[2] = (file->st_mode & S_IXUSR) ? 's' : 'S';
 	}
-	else {
-		if ( file->st_mode & S_IXUSR ) { permissions[2] = 'x'; };
-	}
+	else if (file->st_mode & S_IXUSR) { permissions[2] = 'x'; };
 	
 	/* group permissions */
-	if ( file->st_mode & S_IRGRP ) { permissions[3] = 'r'; };
-	if ( file->st_mode & S_IWGRP ) { permissions[4] = 'w'; };
-        if ( file->st_mode & S_ISGID ) {
-		if ( file->st_mode & S_IXGRP ) {
-			permissions[5] = 's';
-		}
-		else {
-			permissions[5] = 'S';
-		}
+	if (file->st_mode & S_IRGRP) { permissions[3] = 'r'; };
+	if (file->st_mode & S_IWGRP) { permissions[4] = 'w'; };
+        if (file->st_mode & S_ISGID) {
+		permissions[5] = (file->st_mode & S_IXGRP) ? 's' : 'S';
 	}
-	else {
-		if ( file->st_mode & S_IXGRP ) { permissions[5] = 'x'; };
-	}
+	else if (file->st_mode & S_IXGRP) { permissions[5] = 'x'; };
 
 	/* all permissions */
-	if ( file->st_mode & S_IROTH ) { permissions[6] = 'r'; };
-	if ( file->st_mode & S_IWOTH ) { permissions[7] = 'w'; };
-        if ( file->st_mode & S_ISVTX ) {
-		if ( file->st_mode & S_IXGRP ) {
-			permissions[8] = 't';
-		}
-		else {
-			permissions[8] = 'T';
-		}
+	if (file->st_mode & S_IROTH) { permissions[6] = 'r'; };
+	if (file->st_mode & S_IWOTH) { permissions[7] = 'w'; };
+        if (file->st_mode & S_ISVTX) {
+		permissions[8] = (file->st_mode & S_IXOTH) ? 't' : 'T';
 	}
-	else {
-		if ( file->st_mode & S_IXGRP ) { permissions[8] = 'x'; };
-	}
+	else if (file->st_mode & S_IXOTH) { permissions[8] = 'x'; };
 
 
 	/* print inodenumber, blockcount as 1k blocks, type+permissions, hardlink count */
