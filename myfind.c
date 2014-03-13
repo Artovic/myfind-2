@@ -396,13 +396,10 @@ char get_file_type(const struct stat *file, const int mode) {
 	if(S_ISLNK(file->st_mode)) { retval = 'l'; }
 	if(S_ISSOCK(file->st_mode)) { retval = 's'; }
 	if(S_ISFIFO(file->st_mode)) { retval = 'p'; }
+	if(S_ISREG(file->st_mode)) {
+		retval = (mode == FILETYPEMODE_LS) ? '-' : 'f';
+	}
 
-	if (mode==FILETYPEMODE_LS) {
-		if(S_ISREG(file->st_mode)) { retval = '-'; }
-	}
-	else if (mode==FILETYPEMODE_TYPE) {
-		if(S_ISREG(file->st_mode)) { retval = 'f'; }
-	}
 
 	return retval;
 }
