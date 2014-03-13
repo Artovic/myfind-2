@@ -79,7 +79,7 @@ void do_dir(const char *dir_name, const char * const *argv, int argc);
 char get_file_type(const struct stat *file, const int mode);
 void ls(const struct stat *file, const char *file_name);
 bool nouser(const struct stat *file);
-bool usermatch(const struct stat *file, const char *arg);
+bool usernamematch(const struct stat *file, const char *arg);
 bool isnumeric(const char *arg);
 
 /**
@@ -192,7 +192,6 @@ void do_file(const char *file_name, const int mode, const char * const *argv, in
 
 	struct stat myfile;
 	int i = 0;
-	/* make sure we print if for-loop is not run */
 	bool printed = false;
 	bool lsed = false;
 	char *file_name_copy = NULL;
@@ -211,6 +210,7 @@ void do_file(const char *file_name, const int mode, const char * const *argv, in
 	fprintf(stderr, "do_file was called for file: %s\n", file_name);
 	#endif
 
+	/* go get inode infos */
 	errno = 0;
 	if ( lstat(file_name, &myfile) == -1 ) {
 		fprintf(stderr, "%s: Could not stat %s - %s\n", progname, file_name, strerror(errno));
@@ -222,7 +222,7 @@ void do_file(const char *file_name, const int mode, const char * const *argv, in
 			match = true;
 		}
 		
-		/* parse passed parameters */
+		/* parse passed parameters, break loop if there is no match between file and criteria */
 		for(i=2; i<argc; i++) {
 
 			if (strcmp(argv[i], OPTION_NOUSER) == 0) {
@@ -230,59 +230,62 @@ void do_file(const char *file_name, const int mode, const char * const *argv, in
 					match = false;
 					break;
 				}
-				match = true;
+				else {
+					match = true;
+				}
 			}
 			else if (strcmp(argv[i], OPTION_USER) == 0) {
-				if (usermatch(&myfile, argv[++i]) == false) {
+				if (usernamematch(&myfile, argv[++i]) == false) {
 					match = false;
 					break;
 				}
-				match = true;
+				else {
+					match = true;
+				}
 			}
 			else if (strcmp(argv[i], OPTION_NAME) == 0) {
 				if (fnmatch(argv[++i], basename((char*)file_name_copy), 0) != 0) {
 					match = false;
 					break;
 				}
-				match = true;
+				else {
+					match = true;
+				}
 			}
 			else if (strcmp(argv[i], OPTION_PATH) == 0) {
 				if (fnmatch(argv[++i], file_name, FNM_PATHNAME) != 0) {
 					match = false;
 					break;
 				}
-				match = true;
+				else {
+					match = true;
+				}
 			}
 			else if (strcmp(argv[i], OPTION_TYPE) == 0) {
 				if (argv[++i][0] != get_file_type(&myfile, FILETYPEMODE_TYPE)) {
 					match = false;
 					break;
 				}
-				match = true;
+				else {
+					match = true;
+				}
 			}
 			else if (strcmp(argv[i], OPTION_LS) == 0) {
 				ls(&myfile, file_name);
 				lsed = true;
 			}
-			/* print it if invoked explicitely or nothing lsed yet */
-			/* else if ( (strcmp(argv[i], OPTION_PRINT) == 0 && (strcmp(argv[i-1], OPTION_NAME) != 0)) || ( (i+1) == argc && lsed == false) ) { */
+			/* print it if invoked explicitely */
 			else if (strcmp(argv[i], OPTION_PRINT) == 0) {
 				printf("%s\n", file_name);
 				printed = true;
 			}
-			/* all params allready checked so assert just makes trouble here */
 			else {
 				assert(0);
 			}
 
-
 		}
 
-		/*
-		printf("match: %d\n", match);
-		*/
-
-
+		/* print it if matched and not printed/lsed yet */
 		if (match == true && printed == false && lsed == false) {
 			printf("%s\n", file_name);
 		}
@@ -367,7 +370,6 @@ void do_dir(const char *dir_name, const char * const *argv, int argc) {
 		} 
 
 		mydirp = NULL;
-		/* thisdir allready NULL at this time so we don't need to NULL it*/
 
         }
 
@@ -484,6 +486,7 @@ void ls(const struct stat *file, const char *file_name) {
 
 
 	/* print inodenumber, blockcount as 1k blocks, type+permissions, hardlink count */
+	/* typecast file->st_nlink to long for 32/64 bit compatibility */
 	printf("%lu %lu %c%s %lu", file->st_ino, (file->st_blocks / 2), filetype, permissions, (long) file->st_nlink);
 
 	/* lookup name for UID */
@@ -559,18 +562,17 @@ bool nouser(const struct stat *file) {
 
 /**
  *
- * \brief Used to return if given uid or username matches file's uid
+ * \brief Used to return if given username matches file's uid
  *
  * \param file Pointer to struct stat of current file 
  * \param arg String to match
- * \return true if file's uid matches given uid or username 
+ * \return true if file's uid matches given username's uid 
  *
  */
-bool usermatch(const struct stat *file, const char *arg) {
+bool usernamematch(const struct stat *file, const char *arg) {
 	struct passwd *pwd = NULL;
 	pwd = getpwnam(arg);
 
-	/* if ( ((pwd = getpwnam(arg))!= NULL && file->st_uid == pwd->pw_uid) || (isnumeric(arg) == true && (long) file->st_uid == strtol(arg, NULL, 10)) ) { */
 	if ( ((pwd = getpwnam(arg))!= NULL && file->st_uid == pwd->pw_uid) ) {
 		return true;
 	}
@@ -580,6 +582,14 @@ bool usermatch(const struct stat *file, const char *arg) {
 }
 
 
+/**
+ *
+ * \brief Used to return if passed string is numeric 
+ *
+ * \param arg String to check for alphanumeric chars 
+ * \return true if string is just numeric, otherwise false 
+ *
+ */
 bool isnumeric(const char *arg) {
 
 	int i = 0;
