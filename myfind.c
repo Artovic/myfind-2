@@ -67,7 +67,7 @@
  * --------------------------------------------------------------- globals --
  */
 
-/* declare program name instead of carrying argv to every function... */
+/* declare program name globally instead of carrying argv to every function... */
 const char *progname = NULL;
 
 /*
