@@ -197,11 +197,11 @@ void usage(void) {
  */
 void do_file(const char *file_name, const int mode, const char * const *argv, int argc) {	
 
-	struct stat myfile;
 	int i = 0;
+	struct stat myfile;
+	char *file_name_copy = NULL;
 	bool printed = false;
 	bool lsed = false;
-	char *file_name_copy = NULL;
 	bool match = false;
 
 	/* basename/dirname may modify passed string so make a copy... */
@@ -273,7 +273,9 @@ void do_file(const char *file_name, const int mode, const char * const *argv, in
 			}
 			/* print it if invoked explicitely */
 			else if (strcmp(argv[i], OPTION_PRINT) == 0) {
-				printf("%s\n", file_name);
+				if ( fprintf(stdout, "%s\n", file_name) < 0 ) {
+					fprintf(stderr, "%s: writing to stdout failed!\n", progname);
+				}
 				printed = true;
 			}
 			else {
@@ -284,7 +286,9 @@ void do_file(const char *file_name, const int mode, const char * const *argv, in
 
 		/* print it if matched and not printed/lsed yet */
 		if (match == true && printed == false && lsed == false) {
-			printf("%s\n", file_name);
+			if ( fprintf(stdout, "%s\n", file_name) < 0 ) {
+				fprintf(stderr, "%s: writing to stdout failed!\n", progname);
+			}
 		}
 
 		/* if file is subdirectory descend into hierarchy */
@@ -469,29 +473,41 @@ void ls(const struct stat *file, const char *file_name) {
 
 	/* print inodenumber, blockcount as 1k blocks, type+permissions, hardlink count */
 	/* typecast file->st_nlink to long for 32/64 bit compatibility */
-	printf("%6lu %4lu %c%s %3lu", file->st_ino, (file->st_blocks / 2), filetype, permissions, (long) file->st_nlink);
+	if ( fprintf(stdout, "%6lu %4lu %c%s %3lu", file->st_ino, (file->st_blocks / 2), filetype, permissions, (long) file->st_nlink) < 0 ) {
+		fprintf(stderr, "%s: writing to stdout failed!\n", progname);
+	}
 
 	/* lookup name for UID */
 	if ((pwd = getpwuid(file->st_uid)) == NULL) {
-		printf(" %-8d", file->st_uid);
+		if ( fprintf(stdout, " %-8d", file->st_uid) < 0 ) {
+			fprintf(stderr, "%s: writing to stdout failed!\n", progname);
+		}
 	}
 	else {
-		printf(" %-8s", pwd->pw_name);
+		if ( fprintf(stdout, " %-8s", pwd->pw_name) < 0 ) {
+			fprintf(stderr, "%s: writing to stdout failed!\n", progname);
+		}
 		pwd = NULL;
 	}
 
 
 	/* lookup name for GID */
         if ((grp = getgrgid(file->st_gid)) == NULL) {
-                printf(" %-8d", file->st_gid);
+                if ( fprintf(stdout, " %-8d", file->st_gid) < 0 ) {
+			fprintf(stderr, "%s: writing to stdout failed!\n", progname);
+		}
         }
         else {
-                printf(" %-8s", grp->gr_name);
+                if ( fprintf(stdout, " %-8s", grp->gr_name) < 0 ) {
+			fprintf(stderr, "%s: writing to stdout failed!\n", progname);
+		}
         	grp = NULL;
         }
 
 	/* print file size, timestring, filename*/
-        printf(" %8lu %s %s", file->st_size, timestring, file_name);
+        if ( fprintf(stdout, " %8lu %s %s", file->st_size, timestring, file_name) < 0 ) {
+		fprintf(stderr, "%s: writing to stdout failed!\n", progname);
+	}
 
 	/* in case it's a symlink, print it's destination */
 	if (filetype == 'l') {
@@ -508,10 +524,14 @@ void ls(const struct stat *file, const char *file_name) {
 
 		errno = 0;
 		if ( (linkbytesread = readlink(file_name, linkdestination, linklength-1)) > 0 ) {
-			printf(" -> %s", linkdestination);
+			if ( fprintf(stdout, " -> %s", linkdestination) < 0 ) {
+				fprintf(stderr, "%s: writing to stdout failed!\n", progname);
+			}
 		}
 		else {
-			printf(" -> ERROR READING LINK");
+			if ( fprintf(stdout, " -> ERROR READING LINK") < 0 ) {
+				fprintf(stderr, "%s: writing to stdout failed!\n", progname);
+			}
 			fprintf(stderr, "%s: Error reading link %s - %s\n", progname, file_name, strerror(errno));	
 		}
 
@@ -519,7 +539,9 @@ void ls(const struct stat *file, const char *file_name) {
 		linkdestination = NULL;
 	}
 
-	printf("\n");
+	if ( fprintf(stdout, "\n") < 0 ) {
+		fprintf(stderr, "%s: writing to stdout failed!\n", progname);
+	}
 
 }
 
