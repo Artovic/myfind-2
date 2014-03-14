@@ -428,7 +428,7 @@ void ls(const struct stat *file, const char *file_name) {
 		tmp[1] = ' ';
 	}
 	strcat(timestring, tmp);
-	strftime(tmp,6," %H:%M", ptime);
+	strftime(tmp,7," %H:%M", ptime);
 	strcat(timestring, tmp);
 
 	/* fill permission array */
