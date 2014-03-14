@@ -80,7 +80,7 @@ void do_dir(const char *dir_name, const char * const *argv, int argc);
 char get_file_type(const struct stat *file, const int mode);
 void ls(const struct stat *file, const char *file_name);
 bool nouser(const struct stat *file);
-bool usernamematch(const struct stat *file, const char *arg);
+bool usermatch(const struct stat *file, const char *arg);
 bool isnumeric(const char *arg);
 
 /**
@@ -243,7 +243,7 @@ void do_file(const char *file_name, const int mode, const char * const *argv, in
 				match = true;
 			}
 			else if (strcmp(argv[i], OPTION_USER) == 0) {
-				if (usernamematch(&myfile, argv[++i]) == false) {
+				if (usermatch(&myfile, argv[++i]) == false) {
 					match = false;
 					break;
 				}
@@ -575,11 +575,17 @@ bool nouser(const struct stat *file) {
  * \return true if file's uid matches given username's uid 
  *
  */
-bool usernamematch(const struct stat *file, const char *arg) {
+bool usermatch(const struct stat *file, const char *arg) {
 	struct passwd *pwd = NULL;
 	pwd = getpwnam(arg);
 
+	/* lookup argument in /etc/passwd first and check if it matches */
 	if ( ((pwd = getpwnam(arg))!= NULL && file->st_uid == pwd->pw_uid) ) {
+		return true;
+	}
+	/* otherwise check if passed arg is numeric and if so compare to st_uid */
+	/* note: we allready know that arg is just numeric so second param for strtol() is NULL */
+	else if (isnumeric(arg) == true && file->st_uid == (unsigned long) strtol(arg, NULL, 10)) {
 		return true;
 	}
 	else {
