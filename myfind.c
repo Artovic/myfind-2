@@ -32,6 +32,7 @@
 #include <ctype.h>
 #include <assert.h>
 #include <stdbool.h>
+#include <locale.h>
 
 
 
@@ -101,6 +102,9 @@ int main(int argc, const char * const *argv) {
 	int i = 0;
 	struct stat myfile;
 	struct passwd *pwd = NULL;
+
+	/* be nice and localize... */
+	setlocale(LC_ALL, "");
 
 	/* set global *progname to stripped argv[0] */
 	progname = basename((char*) argv[0]);
@@ -183,7 +187,10 @@ void usage(void) {
  *
  * \brief Get inode information for file
  *
+ *  Print file name or call ls() for matching files acoording to args provided by user
+ *
  * \param file_name Path of the file name
+ * \param mode Used to trigger wheter descending into hierarchy is desired or not 
  * \param argv argv passed through from main()
  * \param argc argc passed through from main()
  *
@@ -293,6 +300,8 @@ void do_file(const char *file_name, const int mode, const char * const *argv, in
 /**
  *
  * \brief Get contents of directory
+ *
+ * Get contents of directory and call do_file() for every record found
  *
  * \param dir_name Path of the directory name
  * \param argv argv passed through from main()
@@ -405,8 +414,8 @@ char get_file_type(const struct stat *file, const int mode) {
 void ls(const struct stat *file, const char *file_name) {
 
 	char permissions[10] = {0};
-	char timestring[18] = {0};
-	char tmp[6] = {0};
+	char timestring[20] = {0};
+	char tmp[7] = {0};
 	char *linkdestination = NULL;
 	int linkbytesread = 0;
 	int linklength = 0;
@@ -417,13 +426,16 @@ void ls(const struct stat *file, const char *file_name) {
 
 	filetype = get_file_type(file, FILETYPEMODE_LS);
 
+
 	/* initialize 9 of 10 chars of permissions with - */
 	memset(permissions, '-', 9 );
 
 	/* parse st_mtime, write it into timestring and print it */
 	ptime = localtime(&file->st_mtime);
-	strftime(timestring,18,"%b", ptime);
+	/* 8 usable chars should be enough even for localized strings */
+	strftime(timestring,9,"%b", ptime);
 	strftime(tmp,4," %d", ptime);
+	/* get rid of leading 0 in %d as SU extensions must be avoided */
 	if(tmp[1] == '0') {
 		tmp[1] = ' ';
 	}
