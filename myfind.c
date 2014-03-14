@@ -568,11 +568,14 @@ bool nouser(const struct stat *file) {
 
 /**
  *
- * \brief Used to return if given username matches file's uid
+ * \brief Used to return if given argument matches file's uid
+ *
+ * As we don't know if arg is a uid or user name, we look it up first and check if there is a match.\n
+ * Otherwise we check if arg is numeric and compare it with st_uid
  *
  * \param file Pointer to struct stat of current file 
  * \param arg String to match
- * \return true if file's uid matches given username's uid 
+ * \return true if file's uid matches given username's uid or given numeric uid 
  *
  */
 bool usermatch(const struct stat *file, const char *arg) {
