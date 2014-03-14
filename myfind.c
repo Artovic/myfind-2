@@ -6,7 +6,7 @@
  * \author Leandros Athanasiadis <leandros.athanasiadis@technikum-wien.at>
  * \author Klemens Henk <klemens.henk@technikum-wien.at>
  * \author Davor Dadic <davor.dadic@technikum-wien.at>
- * \date 2014/03/08
+ * \date 2014/03/14
  *
  * \version 1.0
  *
@@ -67,7 +67,7 @@
  * --------------------------------------------------------------- globals --
  */
 
-/* declare program name instead of allways invoking basename(argv[0]) */
+/* declare program name instead of carrying argv to every function... */
 const char *progname = NULL;
 
 /*
@@ -106,8 +106,10 @@ int main(int argc, const char * const *argv) {
 	/* be nice and localize... */
 	setlocale(LC_ALL, "");
 
-	/* set global *progname to stripped argv[0] */
-	progname = basename((char*) argv[0]);
+	/* set global name to full invocation path as it seems to be common this way */
+	/* set global *progname to stripped argv[0] 
+	   progname = basename((char*) argv[0]);*/
+	progname = argv[0];
 
 	/* Syntax check of passed params */
 	if (argc <2) {
