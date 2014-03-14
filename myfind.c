@@ -464,7 +464,7 @@ void ls(const struct stat *file, const char *file_name) {
 		permissions[5] = (file->st_mode & S_IXGRP) ? 's' : 'S';
 	}
 	else if (file->st_mode & S_IXGRP) { permissions[5] = 'x'; };
-	/* all permissions */
+	/* other permissions */
 	if (file->st_mode & S_IROTH) { permissions[6] = 'r'; };
 	if (file->st_mode & S_IWOTH) { permissions[7] = 'w'; };
         if (file->st_mode & S_ISVTX) {
