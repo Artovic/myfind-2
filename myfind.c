@@ -93,7 +93,7 @@ bool isnumeric(const char *arg);
  * \param argv The arguments itselves (including the program name in argv[0]).\n
  * Expects first parameter to be a directory.
  *
- * \return Always EXIT_SUCCESS 
+ * \return EXIT_SUCCESS allways but program may return EXIT_FAILURE due to call of usage()
  *
  */
 
