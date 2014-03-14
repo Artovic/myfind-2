@@ -107,9 +107,10 @@ int main(int argc, const char * const *argv) {
 	setlocale(LC_ALL, "");
 
 	/* set global name to full invocation path as it seems to be common this way */
-	/* set global *progname to stripped argv[0] 
-	   progname = basename((char*) argv[0]);*/
 	progname = argv[0];
+	/* set global *progname to stripped argv[0] 
+	   progname = basename((char*) argv[0]);
+	*/
 
 	/* Syntax check of passed params */
 	if (argc <2) {
@@ -162,7 +163,7 @@ int main(int argc, const char * const *argv) {
 		if (get_file_type(&myfile, FILETYPEMODE_TYPE) == 'd') {
 			do_dir(argv[1], argv, argc);
 		}
-		else {
+		else {	/* we've been called for a file, not a dir, so skip recursion stuff */
 			do_file(argv[1], DOFILEMODE_SELF, argv, argc);
 		}
 	}
@@ -286,7 +287,7 @@ void do_file(const char *file_name, const int mode, const char * const *argv, in
 
 		}
 
-		/* print it if matched and not printed/lsed yet */
+		/* print if matched and not printed/lsed yet */
 		if (match == true && printed == false && lsed == false) {
 			if ( fprintf(stdout, "%s\n", file_name) < 0 ) {
 				fprintf(stderr, "%s: writing to stdout failed!\n", progname);
@@ -340,7 +341,7 @@ void do_dir(const char *dir_name, const char * const *argv, int argc) {
 			/* prevent infinite loops */
 			if ( (strcmp(thisdir->d_name, ".") != 0 ) && (strcmp(thisdir->d_name, "..") != 0 ) ) {
 
-				/* allocate memory for path, /, d_name and \0 */
+				/* allocate memory for path, '/', d_name and '\0' */
 				path = malloc( (strlen(dir_name)+strlen(thisdir->d_name)+2) * sizeof(char) );
 				if (path == NULL) {
 					fprintf(stderr, "%s: Memory allocation for path in do_dir failed, exiting.\n", progname);
@@ -377,7 +378,6 @@ void do_dir(const char *dir_name, const char * const *argv, int argc) {
 		mydirp = NULL;
 
         }
-
 
 }
 
