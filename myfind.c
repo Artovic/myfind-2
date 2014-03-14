@@ -406,12 +406,14 @@ void ls(const struct stat *file, const char *file_name) {
 
 	char permissions[10] = {0};
 	char timestring[18] = {0};
+	char tmp[6] = {0};
 	char *linkdestination = NULL;
 	int linkbytesread = 0;
 	int linklength = 0;
 	char filetype = 0;
 	struct passwd *pwd = NULL;
 	struct group *grp = NULL;
+	struct tm *ptime = NULL;
 
 	filetype = get_file_type(file, FILETYPEMODE_LS);
 
@@ -419,7 +421,15 @@ void ls(const struct stat *file, const char *file_name) {
 	memset(permissions, '-', 9 );
 
 	/* parse st_mtime, write it into timestring and print it */
-	strftime(timestring,18,"%b %d %H:%M", localtime(&file->st_mtime));
+	ptime = localtime(&file->st_mtime);
+	strftime(timestring,18,"%b", ptime);
+	strftime(tmp,4," %d", ptime);
+	if(tmp[1] == '0') {
+		tmp[1] = ' ';
+	}
+	strcat(timestring, tmp);
+	strftime(tmp,6," %H:%M", ptime);
+	strcat(timestring, tmp);
 
 	/* fill permission array */
 	/* user permissions */
