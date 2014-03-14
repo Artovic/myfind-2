@@ -579,8 +579,8 @@ bool usermatch(const struct stat *file, const char *arg) {
 	struct passwd *pwd = NULL;
 	pwd = getpwnam(arg);
 
-	/* lookup argument in /etc/passwd first and check if it matches */
-	if ( ((pwd = getpwnam(arg))!= NULL && file->st_uid == pwd->pw_uid) ) {
+	/* lookup arg in /etc/passwd first and check if we have a matches */
+	if ( (pwd = getpwnam(arg)) != NULL && file->st_uid == pwd->pw_uid) {
 		return true;
 	}
 	/* otherwise check if passed arg is numeric and if so compare to st_uid */
