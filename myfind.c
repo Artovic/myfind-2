@@ -42,15 +42,12 @@
 
 #undef MYFIND_DEBUG
 
-#define MAXPARAMLENGTH 8
-
 #define OPTION_USER "-user"
 #define OPTION_NAME "-name"
 #define OPTION_TYPE "-type"
 #define OPTION_PRINT "-print"
 #define OPTION_LS "-ls"
 #define OPTION_NOUSER "-nouser"
-#define OPTION_NOUSER_TEST -nouser
 #define OPTION_PATH "-path"
 
 #define FILETYPEMODE_LS 0
@@ -182,7 +179,15 @@ int main(int argc, const char * const *argv) {
  *
  */
 void usage(void) {
-	fprintf(stderr, "Usage: %s <DIRECTORY> [PARAMETER]\n", progname);
+	fprintf(stderr, "Usage: %s <FILE/DIRECTORY> [PARAMETER]\n", progname);
+	fprintf(stderr, "       PARAMETER may be any combination of the following:\n");
+	fprintf(stderr, "       %-8s <username/uid> match given user's files\n", OPTION_USER);
+	fprintf(stderr, "       %-8s <expression> match filenames that match given expression\n", OPTION_NAME);
+	fprintf(stderr, "       %-8s <expression> match filenames that match given path and file name\n", OPTION_PATH);
+	fprintf(stderr, "       %-8s <bcdpfls> match files of given type\n", OPTION_TYPE);
+	fprintf(stderr, "       %-8s match files owned by a unknown uid according to /etc/passwd\n", OPTION_NOUSER);
+	fprintf(stderr, "       %-8s prints detailed information about matching files\n", OPTION_LS);
+	fprintf(stderr, "       %-8s prints filename explicitly (this is the default behaviour unless \"%s\" specified\n", OPTION_PRINT, OPTION_LS);
 	exit(EXIT_FAILURE);
 }
 
