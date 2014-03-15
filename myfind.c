@@ -184,7 +184,7 @@ void usage(void) {
 	fprintf(stderr, "       %-8s <username/uid> match given user's files\n", OPTION_USER);
 	fprintf(stderr, "       %-8s <expression> match filenames that match given expression\n", OPTION_NAME);
 	fprintf(stderr, "       %-8s <expression> match filenames that match given path and file name\n", OPTION_PATH);
-	fprintf(stderr, "       %-8s <bcdpfls> match files of given type\n", OPTION_TYPE);
+	fprintf(stderr, "       %-8s <b/c/d/p/f/l/s> match files of given type\n", OPTION_TYPE);
 	fprintf(stderr, "       %-8s match files owned by a unknown uid according to /etc/passwd\n", OPTION_NOUSER);
 	fprintf(stderr, "       %-8s prints detailed information about matching files\n", OPTION_LS);
 	fprintf(stderr, "       %-8s prints filename explicitly (this is the default behaviour unless \"%s\" specified\n", OPTION_PRINT, OPTION_LS);
