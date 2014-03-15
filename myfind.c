@@ -187,7 +187,7 @@ void usage(void) {
 	fprintf(stderr, "       %-8s <b/c/d/p/f/l/s> match files of given type\n", OPTION_TYPE);
 	fprintf(stderr, "       %-8s match files owned by a unknown uid according to /etc/passwd\n", OPTION_NOUSER);
 	fprintf(stderr, "       %-8s prints detailed information about matching files\n", OPTION_LS);
-	fprintf(stderr, "       %-8s prints filename explicitly (this is the default behaviour unless \"%s\" specified\n", OPTION_PRINT, OPTION_LS);
+	fprintf(stderr, "       %-8s prints filename explicitly (this is the default behaviour unless \"%s\" specified)\n", OPTION_PRINT, OPTION_LS);
 	exit(EXIT_FAILURE);
 }
 
