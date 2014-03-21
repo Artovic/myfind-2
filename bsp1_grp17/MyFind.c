@@ -351,6 +351,7 @@ bool checkSearchOptions(char **searchOptions)
 			}
 			else
 			{
+				/* FB Gruppe7: i+=2 nachvollziehbar da nächster Eintrag Argument zum aktuellen Eintrag ist. Hinweis darauf wäre aber hilfreich */
 				i += 2;
 				continue;
 			}
@@ -471,6 +472,7 @@ void findWithArguments(struct dirent *dirp, char *argv[], char *path, struct sta
 	{
 		while (argumentCount < params.ParameterCount)
 		{
+				/* FB Gruppe7: Einrückung erschwert Lesbarkeit */
 				if (strcmp(argv[argumentCount],PARAM_NAME) == 0)
 			{
 				optionsCount++;
@@ -493,6 +495,7 @@ void findWithArguments(struct dirent *dirp, char *argv[], char *path, struct sta
 					
 				}
 
+				/* FB Gruppe7: Sich wiederholende Abbruchbedingungen, hätte durch zusätzliche Schleife vermieden werden können */
 				if (++argumentCount < params.ParameterCount)
 				{
 					continue;
@@ -512,6 +515,7 @@ void findWithArguments(struct dirent *dirp, char *argv[], char *path, struct sta
 				{
 					
 					foundCount++;
+					/* FB Gruppe7: Sich wiederholende Abbruchbedingungen, hätte durch zusätzliche Schleife vermieden werden können */
 					if (++argumentCount < params.ParameterCount)
 					{
 						continue;
@@ -537,6 +541,7 @@ void findWithArguments(struct dirent *dirp, char *argv[], char *path, struct sta
 					foundCount++;
 					
 				}
+				/* FB Gruppe7: Sich wiederholende Abbruchbedingungen, hätte durch zusätzliche Schleife vermieden werden können */
 				if (++argumentCount < params.ParameterCount)
 				{
 					continue;
@@ -555,6 +560,7 @@ void findWithArguments(struct dirent *dirp, char *argv[], char *path, struct sta
 				}
 
 				printed = true;
+				/* FB Gruppe7: Sich wiederholende Abbruchbedingungen, hätte durch zusätzliche Schleife vermieden werden können */
 				if (++argumentCount < params.ParameterCount)
 				{
 					continue;
@@ -900,7 +906,8 @@ bool checkIfUserExists(char *username)
 	while ((pw = getpwent()) != NULL )
 	{
 		/* FB Gruppe7: ein Username kann durchaus aus teilweise oder auch komplett numerischen Teilen bestehen, dieses Vorgehen bewirkt falsche Ergebnisse
-		   Bsp: UID 0; Beginn mit bekannter UID und wahllosen Zeichen etc. etc. */
+		   Bsp: UID 0; Beginn mit bekannter UID und wahllosen Zeichen etc. etc.
+		   Weiters: id ist als unsigned int definiert, strol liefert aber einen signed long zurück - dennoch keine Compilererrors?! */ 
 		id = strtol(username, &pend, 10);
 		if (id == 0)
 		{
@@ -920,7 +927,6 @@ bool checkIfUserExists(char *username)
 
 	/* FB Gruppe7: Aufruf von endpwent() fehlt */
 
-	/* FB Gruppe7: Siehe oben...zusätzlich: so kann nie nach user "0" gesucht werden, was aber zulässig wäre */
 	if (id != 0 && !found)
 	{
 		exit(EXIT_FAILURE);
@@ -951,6 +957,7 @@ bool typeValidation (char *searchOptions)
 	{
 		result = true;
 	}
+	/* FB Gruppe7: else-Zweig überflüssig da result bereits mit "false" initialisiert */
 	else
 	{
 		result = false;
