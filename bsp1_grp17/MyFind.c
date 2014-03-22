@@ -64,7 +64,6 @@
  * -- globals --
  */
 
-/* FB Gruppe7: TODO: kritisieren ? */
 typedef struct myFindValues
 {
 	int ParameterCount;
@@ -165,7 +164,6 @@ int printDirectory(const char *dir, int level, int fpOutputfile, char *searchOpt
 	/* FB Gruppe7: ernno wird nicht zurückgesetzt */
 	stat(dir, &inputfileStat);
 			
-	/* FB Gruppe7: TODO was schreibma da  */
 	if (S_ISREG(inputfileStat.st_mode) != 0)
 	{
 		if(params.ParameterCount > 2)
@@ -459,6 +457,9 @@ void findWithArguments(struct dirent *dirp, char *argv[], char *path, struct sta
 	struct group grp1;
 	int uid = 0;
 	char name[200];
+	/* FB Gruppe7: "magic" verhindert keine Typecasts sondern macht aus expliziten Typecasts implizite Typecasts
+	   in den meisten Fällen hätte man die auszugebenden Werte mittels Formatstring %lu ausgeben können und so
+	   Typecasts (implizit oder explizit) vermeiden können */
 	int magic = 0;
 
 	
@@ -582,6 +583,7 @@ void findWithArguments(struct dirent *dirp, char *argv[], char *path, struct sta
 				{
 					foundCount++;
 				}
+				/* FB Gruppe7: Sich wiederholende Abbruchbedingungen, hätte durch zusätzliche Schleife vermieden werden können */
 				if (++argumentCount < params.ParameterCount)
 				{
 					continue;
@@ -599,6 +601,7 @@ void findWithArguments(struct dirent *dirp, char *argv[], char *path, struct sta
 				{
 					foundCount++;
 				}
+				/* FB Gruppe7: Sich wiederholende Abbruchbedingungen, hätte durch zusätzliche Schleife vermieden werden können */
 				if (++argumentCount < params.ParameterCount)
 				{
 					continue;
@@ -628,6 +631,8 @@ void findWithArguments(struct dirent *dirp, char *argv[], char *path, struct sta
 					sprintf(name, "%d", uid);
 					pwd = getuserperid(name);
 					magic = pwd.pw_uid;
+					/* FB Gruppe7: uid ist nur dann ungleich magic wenn pwd == NULL sprich kein User gefunden - da hätte man gleich auf pwd == NULL checken können,
+					   hätte den Code deutlich verständlicher gemacht */
 					if (uid != magic)
 					{
 						printf(" %d\t", uid);
@@ -641,6 +646,8 @@ void findWithArguments(struct dirent *dirp, char *argv[], char *path, struct sta
 					grp1 = getgroup(name);
 					magic = grp1.gr_gid;
 					
+					/* FB Gruppe7: uid ist nur dann ungleich magic wenn pwd == NULL sprich kein User gefunden - da hätte man gleich auf pwd == NULL checken können,
+					   hätte den Code deutlich verständlicher gemacht */
 					if (uid != magic)
 					{
 						printf("%d\t", uid);
@@ -682,6 +689,7 @@ void findWithArguments(struct dirent *dirp, char *argv[], char *path, struct sta
  */
 void print(char *path)
 {
+	/* FB Gruppe7: gute Idee das in eine eigene Funktion auszulagern hätte man eine Fehlerbehandlung gemacht, falls printf() (auf stdout) fehlschlägt */
 	printf("%s\n", path);
 }
 /**
@@ -695,6 +703,7 @@ void print(char *path)
 struct passwd getuser(char *username)
 {
 	struct passwd user;
+	/* FB Gruppe7: Geschmackssache, aber wir hätten dafür keine eigene Pointervariable deklariert und "user" mit Adressoperator angesprochen */
 	struct passwd *pwdptr = &user;
 	struct passwd *result;
 	char pwdbuffer[200];
@@ -706,7 +715,9 @@ struct passwd getuser(char *username)
 		getpwnam_r(username, pwdptr, pwdbuffer, pwdlenght, &result);
 	
 		if(result == NULL)
-		{	
+		{
+		/* FB Gruppe7: kein Check ob "username" nur numerisch ist, "uid" bekommt nur numerische Werte bis zum 1. Alphanumerischen Wert in "username" zugewiesen.
+		   siehe auch Anmerkung in Funktion checkIfUserExists() */
 		uid = strtol(username, &pend, 10);
 		getpwuid_r(uid, pwdptr, pwdbuffer, pwdlenght, &result);
 		}
@@ -721,6 +732,9 @@ struct passwd getuser(char *username)
  * \param *username
  * \retval user
  */
+
+/* FB Gruppe7: Funktion wird nie aufgerufen */
+
 struct passwd getuserpername(char *username)
 {
 	struct passwd user;
@@ -745,12 +759,15 @@ struct passwd getuserpername(char *username)
 struct passwd getuserperid(char *username)
 {
 	struct passwd user;
+	/* FB Gruppe7: Geschmackssache, aber wir hätten dafür keine eigene Pointervariable deklariert und "user" mit Adressoperator angesprochen */
 	struct passwd *pwdptr = &user;
 	struct passwd *result;
 	char pwdbuffer[200];
 	int pwdlenght = sizeof(pwdbuffer);
 	char *pend;
 	long uid = 0;
+	/* FB Gruppe7: kein Check ob "username" nur numerisch ist, "uid" bekommt nur numerische Werte bis zum 1. Alphanumerischen Wert in "username" zugewiesen.
+	   siehe auch Anmerkung in Funktion checkIfUserExists() */
 	uid = strtol(username, &pend, 10);
 	getpwuid_r(uid, pwdptr, pwdbuffer, pwdlenght, &result);
 
@@ -768,6 +785,7 @@ struct passwd getuserperid(char *username)
 struct group getgroup(char *groupname)
 {
 	struct group grp;
+	/* FB Gruppe7: Geschmackssache, aber wir hätten dafür keine eigene Pointervariable deklariert und "grp" mit Adressoperator angesprochen */
 	struct group *grpptr = &grp;
 	struct group *result;
 	char grpbuffer[200];
@@ -775,6 +793,8 @@ struct group getgroup(char *groupname)
 	char *pend;
 	long uid = 0;
 
+	/* FB Gruppe7: kein Check ob "username" nur numerisch ist, "uid" bekommt nur numerische Werte bis zum 1. Alphanumerischen Wert in "username" zugewiesen.
+	   siehe auch Anmerkung in Funktion checkIfUserExists() */
 	uid = strtol(groupname, &pend, 10);
 	
 	
@@ -873,11 +893,13 @@ void getprotection(struct stat inputfileStat)
 void gettime(struct stat inputfileStat)
 {
 	struct tm *tm;
+	/* FB Gruppe7: recht weit... */
 	char datastring[256];
 	char *time_fmt = NULL;
 	
 	if (time_fmt == NULL )
 	{
+		/* FB Gruppe7: %e ist eine SU extension */
 		time_fmt = "%b  %e %R";
 	}
 	tm = localtime(&inputfileStat.st_mtime);
