@@ -1,0 +1,5 @@
+.) Fehlerhafte Behandlung des angegebene Suchpfades ("/" muss vorkommen; "-" sucht im PWD)
+.) magic Variable
+.) strtol() checkt nicht ob angegebener String nur numerisch ist bzw. wird zwar der Pointer zu dem ersten alphanumerischen Zeichen gemerkt, aber nicht weiter ausgewertet (pend)
+
+Weitere Erklärungen und weitere Punkte siehe Kommentare in MyFind.c beginnend mit "FB Gruppe7:"
